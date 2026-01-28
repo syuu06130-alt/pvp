@@ -1,7 +1,6 @@
 --[[
-    剣名: 影刃 (Kageba) - Final Edition
-    テーマ: ダークファンタジー × 近未来SF
-    特徴: 完全オリジナル黒刃、縦振り攻撃、召喚演出付き
+    剣名: 影刃 (Kageba) - Ultimate Cutscene Edition
+    特徴: 100種類のアニメーション演出 + プレイヤー降臨演出
 ]]
 
 -- Rayfield UIのロード
@@ -9,13 +8,13 @@ local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
 
 -- ウィンドウの作成
 local Window = Rayfield:CreateWindow({
-   Name = "影刃 - Kageba Final",
-   LoadingTitle = "闇を鍛造中...",
-   LoadingSubtitle = "by Shadow Forge Final",
+   Name = "影刃 - Ultimate Cutscene",
+   LoadingTitle = "超豪華演出準備中...",
+   LoadingSubtitle = "by Shadow Forge Cinema",
    ConfigurationSaving = {
       Enabled = false,
       FolderName = nil, 
-      FileName = "KagebaFinal"
+      FileName = "KagebaCinema"
    },
    Discord = {
       Enabled = false,
@@ -27,182 +26,662 @@ local Window = Rayfield:CreateWindow({
 
 -- タブの作成
 local MainTab = Window:CreateTab("⚔️ 武器召喚", 4483362458)
-local EffectTab = Window:CreateTab("✨ 演出設定", 4483362458)
+local CinemaTab = Window:CreateTab("🎬 演出設定", 4483362458)
 
--- 召喚演出関数
-local function PlaySummonCutscene(player)
+-- ========== 超豪華召喚演出関数 ========== --
+local function PlayUltimateCutscene(player)
     local Camera = workspace.CurrentCamera
     local Character = player.Character or player.CharacterAdded:Wait()
     local HumanoidRootPart = Character:WaitForChild("HumanoidRootPart")
+    local Humanoid = Character:WaitForChild("Humanoid")
     
     -- カメラを保存
     local OriginalCameraType = Camera.CameraType
     local OriginalCameraSubject = Camera.CameraSubject
+    local OriginalPosition = HumanoidRootPart.CFrame
     
     -- カメラを固定
     Camera.CameraType = Enum.CameraType.Scriptable
     
-    -- 演出用パーツ（階段の上）
-    local SummonPlatform = Instance.new("Part")
-    SummonPlatform.Size = Vector3.new(20, 1, 20)
-    SummonPlatform.Position = HumanoidRootPart.Position + Vector3.new(0, 15, 0)
-    SummonPlatform.Anchored = true
-    SummonPlatform.Transparency = 1
-    SummonPlatform.CanCollide = false
-    SummonPlatform.Parent = workspace
-    
-    -- 闇の背景（巨大な黒い球体）
-    local DarkBackground = Instance.new("Part")
-    DarkBackground.Size = Vector3.new(50, 50, 50)
-    DarkBackground.Shape = Enum.PartType.Ball
-    DarkBackground.Position = SummonPlatform.Position
-    DarkBackground.Material = Enum.Material.Neon
-    DarkBackground.Color = Color3.fromRGB(0, 0, 0)
-    DarkBackground.Transparency = 0.3
-    DarkBackground.Anchored = true
-    DarkBackground.CanCollide = false
-    DarkBackground.Parent = workspace
-    
-    -- 闇のオーラエフェクト
-    local DarkAuraEffect = Instance.new("ParticleEmitter")
-    DarkAuraEffect.Texture = "rbxassetid://243662263"
-    DarkAuraEffect.Color = ColorSequence.new(Color3.fromRGB(0, 0, 0))
-    DarkAuraEffect.Size = NumberSequence.new({
-        NumberSequenceKeypoint.new(0, 2),
-        NumberSequenceKeypoint.new(0.5, 4),
-        NumberSequenceKeypoint.new(1, 6)
-    })
-    DarkAuraEffect.Transparency = NumberSequence.new({
-        NumberSequenceKeypoint.new(0, 0.5),
-        NumberSequenceKeypoint.new(1, 1)
-    })
-    DarkAuraEffect.Lifetime = NumberRange.new(2, 4)
-    DarkAuraEffect.Rate = 100
-    DarkAuraEffect.Speed = NumberRange.new(2, 5)
-    DarkAuraEffect.SpreadAngle = Vector2.new(180, 180)
-    DarkAuraEffect.Rotation = NumberRange.new(-180, 180)
-    DarkAuraEffect.RotSpeed = NumberRange.new(-50, 50)
-    DarkAuraEffect.Parent = DarkBackground
-    
-    -- 階段の作成
-    local Stairs = {}
-    for i = 1, 10 do
-        local Stair = Instance.new("Part")
-        Stair.Size = Vector3.new(6, 0.5, 3)
-        Stair.Position = SummonPlatform.Position - Vector3.new(0, i * 1.5, i * 1.5)
-        Stair.Material = Enum.Material.Neon
-        Stair.Color = Color3.fromRGB(5, 5, 10)
-        Stair.Anchored = true
-        Stair.CanCollide = true
-        Stair.Transparency = 0.3
-        Stair.Parent = workspace
-        table.insert(Stairs, Stair)
-        
-        -- 階段の縁の光
-        local StairGlow = Instance.new("PointLight")
-        StairGlow.Color = Color3.fromRGB(50, 80, 150)
-        StairGlow.Range = 8
-        StairGlow.Brightness = 1.5
-        StairGlow.Parent = Stair
-    end
-    
-    -- 剣のシルエット（上から降りてくる）
-    local SwordSilhouette = Instance.new("Part")
-    SwordSilhouette.Size = Vector3.new(0.3, 5, 0.8)
-    SwordSilhouette.Position = SummonPlatform.Position + Vector3.new(0, 3, 0)
-    SwordSilhouette.Material = Enum.Material.Neon
-    SwordSilhouette.Color = Color3.fromRGB(0, 0, 0)
-    SwordSilhouette.Transparency = 0
-    SwordSilhouette.Anchored = true
-    SwordSilhouette.CanCollide = false
-    SwordSilhouette.Parent = workspace
-    
-    local SwordGlow = Instance.new("PointLight")
-    SwordGlow.Color = Color3.fromRGB(50, 100, 200)
-    SwordGlow.Range = 15
-    SwordGlow.Brightness = 3
-    SwordGlow.Parent = SwordSilhouette
-    
-    -- カメラアングル設定
-    Camera.CFrame = CFrame.new(SummonPlatform.Position + Vector3.new(15, 5, 15), SummonPlatform.Position)
-    
-    -- 演出開始サウンド
-    local SummonSound = Instance.new("Sound")
-    SummonSound.SoundId = "rbxassetid://5095207895"
-    SummonSound.Volume = 0.8
-    SummonSound.Parent = SwordSilhouette
-    SummonSound:Play()
-    
-    -- 通知
+    -- 演出開始通知
     Rayfield:Notify({
-        Title = "🌑 影刃召喚儀式",
-        Content = "闇の階段を降りて、伝説の刃が顕現する...",
+        Title = "🎬 影刃召喚儀式開始",
+        Content = "天から降臨する伝説の戦士...",
         Duration = 3,
         Image = 4483362458,
     })
     
-    -- 剣が降りてくるアニメーション
-    local DescendDuration = 2
-    local StartPos = SwordSilhouette.Position
-    local EndPos = SummonPlatform.Position + Vector3.new(0, 1, 0)
+    -- ========== 演出用ステージ作成 ========== --
+    local StageCenter = HumanoidRootPart.Position + Vector3.new(0, 50, 0)
     
-    for i = 0, 1, 0.02 do
-        SwordSilhouette.Position = StartPos:Lerp(EndPos, i)
-        SwordSilhouette.Orientation = Vector3.new(0, i * 360 * 2, 0)
-        task.wait(DescendDuration / 50)
+    -- 天空のプラットフォーム
+    local SkyPlatform = Instance.new("Part")
+    SkyPlatform.Size = Vector3.new(30, 1, 30)
+    SkyPlatform.Position = StageCenter + Vector3.new(0, 20, 0)
+    SkyPlatform.Anchored = true
+    SkyPlatform.Transparency = 1
+    SkyPlatform.CanCollide = false
+    SkyPlatform.Parent = workspace
+    
+    -- ========== 背景演出（50種類） ========== --
+    local BackgroundEffects = {}
+    
+    -- 1-10: 神秘的な木々
+    for i = 1, 10 do
+        local Tree = Instance.new("Part")
+        Tree.Size = Vector3.new(3, 15 + math.random(0, 10), 3)
+        Tree.Material = Enum.Material.Wood
+        Tree.Color = Color3.fromRGB(40, 25, 15)
+        Tree.Anchored = true
+        Tree.CanCollide = false
+        local angle = (i / 10) * math.pi * 2
+        Tree.Position = StageCenter + Vector3.new(math.cos(angle) * 25, -5, math.sin(angle) * 25)
+        Tree.Parent = workspace
+        table.insert(BackgroundEffects, Tree)
+        
+        -- 木の葉エフェクト
+        local Leaves = Instance.new("Part")
+        Leaves.Size = Vector3.new(6, 6, 6)
+        Leaves.Shape = Enum.PartType.Ball
+        Leaves.Material = Enum.Material.Neon
+        Leaves.Color = Color3.fromRGB(0, math.random(100, 150), 0)
+        Leaves.Transparency = 0.5
+        Leaves.Anchored = true
+        Leaves.CanCollide = false
+        Leaves.Position = Tree.Position + Vector3.new(0, Tree.Size.Y / 2, 0)
+        Leaves.Parent = workspace
+        table.insert(BackgroundEffects, Leaves)
     end
     
-    -- 着地エフェクト
-    local ImpactEffect = Instance.new("Part")
-    ImpactEffect.Size = Vector3.new(1, 1, 1)
-    ImpactEffect.Shape = Enum.PartType.Ball
-    ImpactEffect.Position = EndPos
-    ImpactEffect.Material = Enum.Material.Neon
-    ImpactEffect.Color = Color3.fromRGB(0, 0, 0)
-    ImpactEffect.Transparency = 0.2
-    ImpactEffect.Anchored = true
-    ImpactEffect.CanCollide = false
-    ImpactEffect.Parent = workspace
+    -- 11-20: 浮遊する水晶
+    for i = 1, 10 do
+        local Crystal = Instance.new("Part")
+        Crystal.Size = Vector3.new(2, 4, 2)
+        Crystal.Material = Enum.Material.Neon
+        Crystal.Color = Color3.fromRGB(math.random(50, 150), math.random(50, 150), 255)
+        Crystal.Transparency = 0.3
+        Crystal.Anchored = true
+        Crystal.CanCollide = false
+        local angle = (i / 10) * math.pi * 2
+        Crystal.Position = StageCenter + Vector3.new(math.cos(angle) * 15, math.random(0, 10), math.sin(angle) * 15)
+        Crystal.Parent = workspace
+        table.insert(BackgroundEffects, Crystal)
+        
+        -- 水晶の光
+        local CrystalLight = Instance.new("PointLight")
+        CrystalLight.Color = Crystal.Color
+        CrystalLight.Range = 15
+        CrystalLight.Brightness = 2
+        CrystalLight.Parent = Crystal
+        
+        -- 回転アニメーション
+        task.spawn(function()
+            while Crystal.Parent do
+                Crystal.CFrame = Crystal.CFrame * CFrame.Angles(0, math.rad(2), 0)
+                task.wait(0.03)
+            end
+        end)
+    end
     
-    local ImpactSound = Instance.new("Sound")
-    ImpactSound.SoundId = "rbxassetid://9125402735"
-    ImpactSound.Volume = 1
-    ImpactSound.Parent = ImpactEffect
-    ImpactSound:Play()
+    -- 21-30: 古代の柱
+    for i = 1, 10 do
+        local Pillar = Instance.new("Part")
+        Pillar.Size = Vector3.new(2, 20, 2)
+        Pillar.Material = Enum.Material.Marble
+        Pillar.Color = Color3.fromRGB(200, 200, 220)
+        Pillar.Anchored = true
+        Pillar.CanCollide = false
+        local angle = (i / 10) * math.pi * 2
+        Pillar.Position = StageCenter + Vector3.new(math.cos(angle) * 20, -10, math.sin(angle) * 20)
+        Pillar.Parent = workspace
+        table.insert(BackgroundEffects, Pillar)
+        
+        -- 柱の装飾
+        local PillarTop = Instance.new("Part")
+        PillarTop.Size = Vector3.new(3, 1, 3)
+        PillarTop.Material = Enum.Material.Marble
+        PillarTop.Color = Color3.fromRGB(180, 180, 200)
+        PillarTop.Anchored = true
+        PillarTop.CanCollide = false
+        PillarTop.Position = Pillar.Position + Vector3.new(0, 10, 0)
+        PillarTop.Parent = workspace
+        table.insert(BackgroundEffects, PillarTop)
+    end
     
-    -- 衝撃波
-    task.spawn(function()
-        for i = 0, 1, 0.05 do
-            ImpactEffect.Size = Vector3.new(1 + i * 20, 1 + i * 20, 1 + i * 20)
-            ImpactEffect.Transparency = 0.2 + (i * 0.8)
-            task.wait(0.03)
+    -- 31-35: 魔法陣
+    for i = 1, 5 do
+        local MagicCircle = Instance.new("Part")
+        MagicCircle.Size = Vector3.new(15 + i * 3, 0.5, 15 + i * 3)
+        MagicCircle.Shape = Enum.PartType.Cylinder
+        MagicCircle.Material = Enum.Material.Neon
+        MagicCircle.Color = Color3.fromRGB(100, 50, 200)
+        MagicCircle.Transparency = 0.6
+        MagicCircle.Anchored = true
+        MagicCircle.CanCollide = false
+        MagicCircle.Position = StageCenter + Vector3.new(0, -15 + i, 0)
+        MagicCircle.Orientation = Vector3.new(0, 0, 90)
+        MagicCircle.Parent = workspace
+        table.insert(BackgroundEffects, MagicCircle)
+        
+        -- 回転
+        task.spawn(function()
+            while MagicCircle.Parent do
+                MagicCircle.CFrame = MagicCircle.CFrame * CFrame.Angles(0, math.rad(1 * i), 0)
+                task.wait(0.03)
+            end
+        end)
+    end
+    
+    -- 36-40: 浮遊する本
+    for i = 1, 5 do
+        local Book = Instance.new("Part")
+        Book.Size = Vector3.new(1.5, 0.3, 2)
+        Book.Material = Enum.Material.SmoothPlastic
+        Book.Color = Color3.fromRGB(100, 50, 20)
+        Book.Anchored = true
+        Book.CanCollide = false
+        local angle = (i / 5) * math.pi * 2
+        Book.Position = StageCenter + Vector3.new(math.cos(angle) * 10, 5, math.sin(angle) * 10)
+        Book.Parent = workspace
+        table.insert(BackgroundEffects, Book)
+        
+        -- ページめくりアニメーション
+        task.spawn(function()
+            while Book.Parent do
+                Book.CFrame = Book.CFrame * CFrame.Angles(math.rad(1), math.rad(0.5), 0)
+                Book.Position = Book.Position + Vector3.new(0, math.sin(tick() * 2) * 0.05, 0)
+                task.wait(0.03)
+            end
+        end)
+    end
+    
+    -- 41-45: 炎の柱
+    for i = 1, 5 do
+        local FirePillar = Instance.new("Part")
+        FirePillar.Size = Vector3.new(3, 25, 3)
+        FirePillar.Material = Enum.Material.Neon
+        FirePillar.Color = Color3.fromRGB(255, 100, 0)
+        FirePillar.Transparency = 0.4
+        FirePillar.Anchored = true
+        FirePillar.CanCollide = false
+        local angle = (i / 5) * math.pi * 2
+        FirePillar.Position = StageCenter + Vector3.new(math.cos(angle) * 30, -5, math.sin(angle) * 30)
+        FirePillar.Parent = workspace
+        table.insert(BackgroundEffects, FirePillar)
+        
+        -- 炎パーティクル
+        local Fire = Instance.new("ParticleEmitter")
+        Fire.Texture = "rbxassetid://6101261905"
+        Fire.Color = ColorSequence.new(Color3.fromRGB(255, 150, 0))
+        Fire.Size = NumberSequence.new(3)
+        Fire.Transparency = NumberSequence.new({
+            NumberSequenceKeypoint.new(0, 0.5),
+            NumberSequenceKeypoint.new(1, 1)
+        })
+        Fire.Lifetime = NumberRange.new(1, 2)
+        Fire.Rate = 50
+        Fire.Speed = NumberRange.new(5)
+        Fire.Parent = FirePillar
+    end
+    
+    -- 46-50: 星空エフェクト
+    for i = 1, 5 do
+        local StarField = Instance.new("Part")
+        StarField.Size = Vector3.new(60, 60, 0.5)
+        StarField.Material = Enum.Material.Neon
+        StarField.Color = Color3.fromRGB(10, 10, 30)
+        StarField.Transparency = 0.7
+        StarField.Anchored = true
+        StarField.CanCollide = false
+        StarField.Position = StageCenter + Vector3.new(0, 30, -30 + i * 3)
+        StarField.Parent = workspace
+        table.insert(BackgroundEffects, StarField)
+        
+        -- 星パーティクル
+        local Stars = Instance.new("ParticleEmitter")
+        Stars.Texture = "rbxassetid://241809795"
+        Stars.Color = ColorSequence.new(Color3.fromRGB(255, 255, 255))
+        Stars.Size = NumberSequence.new(0.3)
+        Stars.Lifetime = NumberRange.new(2, 4)
+        Stars.Rate = 30
+        Stars.Speed = NumberRange.new(0.5)
+        Stars.LightEmission = 1
+        Stars.Parent = StarField
+    end
+    
+    -- ========== 階段の作成 ========== --
+    local Stairs = {}
+    for i = 1, 10 do
+        local Stair = Instance.new("Part")
+        Stair.Size = Vector3.new(8, 0.6, 4)
+        Stair.Position = SkyPlatform.Position - Vector3.new(0, i * 2, i * 2)
+        Stair.Material = Enum.Material.Neon
+        Stair.Color = Color3.fromRGB(10, 10, 20)
+        Stair.Anchored = true
+        Stair.CanCollide = true
+        Stair.Transparency = 0.2
+        Stair.Parent = workspace
+        table.insert(Stairs, Stair)
+        
+        -- 階段の光
+        local StairLight = Instance.new("PointLight")
+        StairLight.Color = Color3.fromRGB(80, 120, 255)
+        StairLight.Range = 12
+        StairLight.Brightness = 2
+        StairLight.Parent = Stair
+        
+        -- 階段のパーティクル
+        local StairParticle = Instance.new("ParticleEmitter")
+        StairParticle.Texture = "rbxassetid://241809795"
+        StairParticle.Color = ColorSequence.new(Color3.fromRGB(100, 150, 255))
+        StairParticle.Size = NumberSequence.new(0.2)
+        StairParticle.Lifetime = NumberRange.new(1, 2)
+        StairParticle.Rate = 20
+        StairParticle.Speed = NumberRange.new(1)
+        StairParticle.LightEmission = 1
+        StairParticle.Parent = Stair
+    end
+    
+    -- ========== プレイヤーを天空に移動 ========== --
+    HumanoidRootPart.CFrame = CFrame.new(SkyPlatform.Position + Vector3.new(0, 5, 0))
+    
+    -- ========== 白い翼の追加 ========== --
+    local LeftWing = Instance.new("Part")
+    LeftWing.Size = Vector3.new(0.5, 8, 4)
+    LeftWing.Material = Enum.Material.Neon
+    LeftWing.Color = Color3.fromRGB(255, 255, 255)
+    LeftWing.Transparency = 0.3
+    LeftWing.CanCollide = false
+    LeftWing.Parent = Character
+    
+    local LeftWingMesh = Instance.new("SpecialMesh")
+    LeftWingMesh.MeshType = Enum.MeshType.Wedge
+    LeftWingMesh.Parent = LeftWing
+    
+    local LeftWingWeld = Instance.new("Weld")
+    LeftWingWeld.Part0 = HumanoidRootPart
+    LeftWingWeld.Part1 = LeftWing
+    LeftWingWeld.C0 = CFrame.new(-1, 1, 0.5) * CFrame.Angles(0, math.rad(30), math.rad(-20))
+    LeftWingWeld.Parent = HumanoidRootPart
+    
+    local RightWing = LeftWing:Clone()
+    RightWing.Parent = Character
+    
+    local RightWingWeld = Instance.new("Weld")
+    RightWingWeld.Part0 = HumanoidRootPart
+    RightWingWeld.Part1 = RightWing
+    RightWingWeld.C0 = CFrame.new(1, 1, 0.5) * CFrame.Angles(0, math.rad(-30), math.rad(20))
+    RightWingWeld.Parent = HumanoidRootPart
+    
+    -- 翼のオーラ
+    local WingAura1 = Instance.new("ParticleEmitter")
+    WingAura1.Texture = "rbxassetid://241809795"
+    WingAura1.Color = ColorSequence.new(Color3.fromRGB(255, 255, 255))
+    WingAura1.Size = NumberSequence.new({
+        NumberSequenceKeypoint.new(0, 0.5),
+        NumberSequenceKeypoint.new(1, 1.5)
+    })
+    WingAura1.Transparency = NumberSequence.new({
+        NumberSequenceKeypoint.new(0, 0.3),
+        NumberSequenceKeypoint.new(1, 1)
+    })
+    WingAura1.Lifetime = NumberRange.new(1, 2)
+    WingAura1.Rate = 50
+    WingAura1.Speed = NumberRange.new(2, 4)
+    WingAura1.LightEmission = 1
+    WingAura1.Parent = LeftWing
+    
+    local WingAura2 = WingAura1:Clone()
+    WingAura2.Parent = RightWing
+    
+    -- ========== 天から降臨サウンド ========== --
+    local DescentSound = Instance.new("Sound")
+    DescentSound.SoundId = "rbxassetid://1843463175"
+    DescentSound.Volume = 1
+    DescentSound.Parent = HumanoidRootPart
+    DescentSound:Play()
+    
+    -- ========== プレイヤーアニメーション50種類 ========== --
+    
+    -- カメラアングル1: 上空から
+    Camera.CFrame = CFrame.new(SkyPlatform.Position + Vector3.new(0, 30, 30), SkyPlatform.Position)
+    
+    task.wait(1)
+    
+    -- 1-10: 翼を広げる演出
+    for i = 1, 10 do
+        LeftWingWeld.C0 = LeftWingWeld.C0 * CFrame.Angles(0, 0, math.rad(-3))
+        RightWingWeld.C0 = RightWingWeld.C0 * CFrame.Angles(0, 0, math.rad(3))
+        
+        -- 光の輪
+        local Halo = Instance.new("Part")
+        Halo.Size = Vector3.new(0.5, 0.5, 0.5)
+        Halo.Shape = Enum.PartType.Ball
+        Halo.Material = Enum.Material.Neon
+        Halo.Color = Color3.fromRGB(255, 255, 200)
+        Halo.Transparency = 0.4
+        Halo.Anchored = true
+        Halo.CanCollide = false
+        Halo.Position = HumanoidRootPart.Position + Vector3.new(0, 3, 0)
+        Halo.Parent = workspace
+        
+        task.spawn(function()
+            for j = 1, 20 do
+                Halo.Size = Halo.Size + Vector3.new(0.5, 0.5, 0.5)
+                Halo.Transparency = 0.4 + (j / 20) * 0.6
+                task.wait(0.02)
+            end
+            Halo:Destroy()
+        end)
+        
+        task.wait(0.1)
+    end
+    
+    -- カメラアングル2: 横から
+    Camera.CFrame = CFrame.new(SkyPlatform.Position + Vector3.new(40, 0, 0), SkyPlatform.Position)
+    
+    -- 11-20: 階段を降りるアニメーション開始準備
+    for i = 1, 10 do
+        -- 全身発光
+        local BodyGlow = Instance.new("PointLight")
+        BodyGlow.Color = Color3.fromRGB(255, 255, 255)
+        BodyGlow.Range = 15 + i
+        BodyGlow.Brightness = 3
+        BodyGlow.Parent = HumanoidRootPart
+        
+        task.delay(0.5, function()
+            BodyGlow:Destroy()
+        end)
+        
+        -- 光の粒子
+        local LightParticle = Instance.new("Part")
+        LightParticle.Size = Vector3.new(0.3, 0.3, 0.3)
+        LightParticle.Shape = Enum.PartType.Ball
+        LightParticle.Material = Enum.Material.Neon
+        LightParticle.Color = Color3.fromRGB(255, 255, math.random(200, 255))
+        LightParticle.Transparency = 0.2
+        LightParticle.Anchored = true
+        LightParticle.CanCollide = false
+        local angle = (i / 10) * math.pi * 2
+        LightParticle.Position = HumanoidRootPart.Position + Vector3.new(math.cos(angle) * 3, math.random(-2, 2), math.sin(angle) * 3)
+        LightParticle.Parent = workspace
+        
+        task.delay(1, function()
+            LightParticle:Destroy()
+        end)
+        
+        task.wait(0.1)
+    end
+    
+    -- カメラアングル3: 正面から
+    Camera.CFrame = CFrame.new(SkyPlatform.Position + Vector3.new(0, 0, 25), SkyPlatform.Position)
+    
+    -- 21-30: 階段を一歩ずつ降りる（各ステップで複数演出）
+    for step = 1, 10 do
+        local targetStair = Stairs[step]
+        
+        -- TPアニメーション
+        -- 消失エフェクト
+        local DisappearEffect = Instance.new("Part")
+        DisappearEffect.Size = Vector3.new(3, 3, 3)
+        DisappearEffect.Shape = Enum.PartType.Ball
+        DisappearEffect.Material = Enum.Material.Neon
+        DisappearEffect.Color = Color3.fromRGB(255, 255, 255)
+        DisappearEffect.Transparency = 0.2
+        DisappearEffect.Anchored = true
+        DisappearEffect.CanCollide = false
+        DisappearEffect.Position = HumanoidRootPart.Position
+        DisappearEffect.Parent = workspace
+        
+        task.spawn(function()
+            for i = 1, 15 do
+                DisappearEffect.Size = DisappearEffect.Size + Vector3.new(0.3, 0.3, 0.3)
+                DisappearEffect.Transparency = 0.2 + (i / 15) * 0.8
+                task.wait(0.02)
+            end
+            DisappearEffect:Destroy()
+        end)
+        
+        -- テレポート
+        HumanoidRootPart.CFrame = CFrame.new(targetStair.Position + Vector3.new(0, 2, 0))
+        
+        -- 出現エフェクト
+        local AppearEffect = Instance.new("Part")
+        AppearEffect.Size = Vector3.new(0.5, 0.5, 0.5)
+        AppearEffect.Shape = Enum.PartType.Ball
+        AppearEffect.Material = Enum.Material.Neon
+        AppearEffect.Color = Color3.fromRGB(255, 255, 255)
+        AppearEffect.Transparency = 0
+        AppearEffect.Anchored = true
+        AppearEffect.CanCollide = false
+        AppearEffect.Position = HumanoidRootPart.Position
+        AppearEffect.Parent = workspace
+        
+        task.spawn(function()
+            for i = 1, 15 do
+                AppearEffect.Size = AppearEffect.Size + Vector3.new(0.5, 0.5, 0.5)
+                AppearEffect.Transparency = (i / 15)
+                task.wait(0.02)
+            end
+            AppearEffect:Destroy()
+        end)
+        
+        -- 階段着地音
+        local StepSound = Instance.new("Sound")
+        StepSound.SoundId = "rbxassetid://5095207895"
+        StepSound.Volume = 0.5
+        StepSound.Pitch = 1 + (step * 0.05)
+        StepSound.Parent = targetStair
+        StepSound:Play()
+        task.delay(1, function() StepSound:Destroy() end)
+        
+        -- 階段周りのエフェクト (5種類 x 10ステップ = 50)
+        for effectNum = 1, 5 do
+            local angle = (effectNum / 5) * math.pi * 2
+            
+            if effectNum == 1 then
+                -- 光の柱
+                local LightBeam = Instance.new("Part")
+                LightBeam.Size = Vector3.new(1, 10, 1)
+                LightBeam.Material = Enum.Material.Neon
+                LightBeam.Color = Color3.fromRGB(255, 255, 200)
+                LightBeam.Transparency = 0.5
+                LightBeam.Anchored = true
+                LightBeam.CanCollide = false
+                LightBeam.Position = targetStair.Position + Vector3.new(math.cos(angle) * 4, 0, math.sin(angle) * 4)
+                LightBeam.Parent = workspace
+                task.delay(0.8, function() LightBeam:Destroy() end)
+                
+            elseif effectNum == 2 then
+                -- 魔法陣の輝き
+                local MagicGlow = Instance.new("Part")
+                MagicGlow.Size = Vector3.new(6, 0.2, 6)
+                MagicGlow.Shape = Enum.PartType.Cylinder
+                MagicGlow.Material = Enum.Material.Neon
+                MagicGlow.Color = Color3.fromRGB(150, 100, 255)
+                MagicGlow.Transparency = 0.4
+                MagicGlow.Anchored = true
+                MagicGlow.CanCollide = false
+                MagicGlow.Position = targetStair.Position
+                MagicGlow.Orientation = Vector3.new(0, 0, 90)
+                MagicGlow.Parent = workspace
+                
+                task.spawn(function()
+                    for i = 1, 20 do
+                        MagicGlow.CFrame = MagicGlow.CFrame * CFrame.Angles(0, math.rad(5), 0)
+                        task.wait(0.03)
+                    end
+                    MagicGlow:Destroy()
+                end)
+                
+            elseif effectNum == 3 then
+                -- 炎の渦
+                local FireVortex = Instance.new("Part")
+                FireVortex.Size = Vector3.new(2, 5, 2)
+                FireVortex.Material = Enum.Material.Neon
+                FireVortex.Color = Color3.fromRGB(255, 150, 0)
+                FireVortex.Transparency = 0.6
+                FireVortex.Anchored = true
+                FireVortex.CanCollide = false
+                FireVortex.Position = targetStair.Position + Vector3.new(math.cos(angle) * 5, 2, math.sin(angle) * 5)
+                FireVortex.Parent = workspace
+                
+                local FireParticle = Instance.new("ParticleEmitter")
+                FireParticle.Texture = "rbxassetid://6101261905"
+                FireParticle.Color = ColorSequence.new(Color3.fromRGB(255, 100, 0))
+                FireParticle.Size = NumberSequence.new(1.5)
+                FireParticle.Lifetime = NumberRange.new(0.5)
+                FireParticle.Rate = 30
+                FireParticle.Speed = NumberRange.new(3)
+                FireParticle.Parent = FireVortex
+                
+                task.delay(0.8, function() FireVortex:Destroy() end)
+                
+            elseif effectNum == 4 then
+                -- 電撃
+                local Lightning = Instance.new("Part")
+                Lightning.Size = Vector3.new(0.3, 8, 0.3)
+                Lightning.Material = Enum.Material.Neon
+                Lightning.Color = Color3.fromRGB(100, 200, 255)
+                Lightning.Transparency = 0.3
+                Lightning.Anchored = true
+                Lightning.CanCollide = false
+                Lightning.Position = targetStair.Position + Vector3.new(math.cos(angle) * 3, 4, math.sin(angle) * 3)
+                Lightning.Parent = workspace
+                
+                local LightningLight = Instance.new("PointLight")
+                LightningLight.Color = Color3.fromRGB(100, 200, 255)
+                LightningLight.Range = 15
+                LightningLight.Brightness = 5
+                LightningLight.Parent = Lightning
+                
+                task.delay(0.3, function() Lightning:Destroy() end)
+                
+            elseif effectNum == 5 then
+                -- 星の軌跡
+                local StarTrail = Instance.new("Part")
+                StarTrail.Size = Vector3.new(0.5, 0.5, 0.5)
+                StarTrail.Shape = Enum.PartType.Ball
+                StarTrail.Material = Enum.Material.Neon
+                StarTrail.Color = Color3.fromRGB(255, 255, math.random(150, 255))
+                StarTrail.Transparency = 0.2
+                StarTrail.Anchored = true
+                StarTrail.CanCollide = false
+                StarTrail.Position = HumanoidRootPart.Position + Vector3.new(math.cos(angle) * 2, 2, math.sin(angle) * 2)
+                StarTrail.Parent = workspace
+                
+                task.spawn(function()
+                    for i = 1, 30 do
+                        StarTrail.Position = StarTrail.Position + Vector3.new(0, -0.2, 0)
+                        StarTrail.Transparency = 0.2 + (i / 30) * 0.8
+                        task.wait(0.02)
+                    end
+                    StarTrail:Destroy()
+                end)
+            end
         end
-        ImpactEffect:Destroy()
-    end)
+        
+        -- カメラをプレイヤーに追従
+        Camera.CFrame = CFrame.new(HumanoidRootPart.Position + Vector3.new(10, 5, 15), HumanoidRootPart.Position)
+        
+        task.wait(1)
+    end
     
-    wait(1)
+    -- 31-40: 最終階段到着後の演出
+    for i = 1, 10 do
+        -- 衝撃波
+        local Shockwave = Instance.new("Part")
+        Shockwave.Size = Vector3.new(i * 2, 0.5, i * 2)
+        Shockwave.Shape = Enum.PartType.Cylinder
+        Shockwave.Material = Enum.Material.Neon
+        Shockwave.Color = Color3.fromRGB(255, 255, 255)
+        Shockwave.Transparency = 0.3 + (i / 10) * 0.7
+        Shockwave.Anchored = true
+        Shockwave.CanCollide = false
+        Shockwave.Position = HumanoidRootPart.Position
+        Shockwave.Orientation = Vector3.new(0, 0, 90)
+        Shockwave.Parent = workspace
+        
+        task.delay(0.5, function() Shockwave:Destroy() end)
+        
+        task.wait(0.1)
+    end
     
-    -- カメラを元に戻す
+    -- 41-50: 翼を消失させる演出
+    for i = 1, 10 do
+        LeftWing.Transparency = 0.3 + (i / 10) * 0.7
+        RightWing.Transparency = 0.3 + (i / 10) * 0.7
+        
+        -- 羽根が散る
+        local Feather = Instance.new("Part")
+        Feather.Size = Vector3.new(0.3, 0.1, 0.5)
+        Feather.Material = Enum.Material.Neon
+        Feather.Color = Color3.fromRGB(255, 255, 255)
+        Feather.Transparency = 0.2
+        Feather.Anchored = true
+        Feather.CanCollide = false
+        Feather.Position = LeftWing.Position
+        Feather.Parent = workspace
+        
+        task.spawn(function()
+            for j = 1, 40 do
+                Feather.Position = Feather.Position + Vector3.new(math.random(-1, 1) * 0.1, -0.2, math.random(-1, 1) * 0.1)
+                Feather.CFrame = Feather.CFrame * CFrame.Angles(math.rad(5), math.rad(5), math.rad(5))
+                Feather.Transparency = 0.2 + (j / 40) * 0.8
+                task.wait(0.03)
+            end
+            Feather:Destroy()
+        end)
+        
+        task.wait(0.1)
+    end
+    
+    -- 翼を削除
+    LeftWing:Destroy()
+    RightWing:Destroy()
+    
+    -- 最終エフェクト音
+    local FinalSound = Instance.new("Sound")
+    FinalSound.SoundId = "rbxassetid://9125402735"
+    FinalSound.Volume = 1.2
+    FinalSound.Parent = HumanoidRootPart
+    FinalSound:Play()
+    
+    -- プレイヤーを元の位置に戻す
+    HumanoidRootPart.CFrame = OriginalPosition
+    
+    -- カメラを戻す
     Camera.CameraType = OriginalCameraType
     Camera.CameraSubject = OriginalCameraSubject
     
-    -- 演出用オブジェクトを削除
-    task.wait(1)
-    DarkBackground:Destroy()
-    SwordSilhouette:Destroy()
-    SummonPlatform:Destroy()
-    for _, stair in pairs(Stairs) do
-        stair:Destroy()
+    -- クリーンアップ
+    task.wait(2)
+    for _, effect in pairs(BackgroundEffects) do
+        if effect and effect.Parent then
+            effect:Destroy()
+        end
     end
+    for _, stair in pairs(Stairs) do
+        if stair and stair.Parent then
+            stair:Destroy()
+        end
+    end
+    SkyPlatform:Destroy()
+    
+    Rayfield:Notify({
+        Title = "✨ 降臨完了",
+        Content = "伝説の戦士が地上に舞い降りた",
+        Duration = 3,
+        Image = 4483362458,
+    })
 end
 
--- 剣生成関数
+-- ========== 剣生成関数 ========== --
 local function CreateKagebaFinal()
     local plr = game.Players.LocalPlayer
     local Character = plr.Character or plr.CharacterAdded:Wait()
     local Backpack = plr.Backpack
     
-    -- 重複防止
     if Backpack:FindFirstChild("影刃") or (Character and Character:FindFirstChild("影刃")) then
         Rayfield:Notify({
             Title = "⚠️ 警告",
@@ -213,7 +692,6 @@ local function CreateKagebaFinal()
         return
     end
 
-    -- ========== ツール本体 ========== --
     local tool = Instance.new("Tool", Backpack)
     tool.GripPos = Vector3.new(0, 0, -1.8)
     tool.GripForward = Vector3.new(0, -1, 0)
@@ -223,17 +701,15 @@ local function CreateKagebaFinal()
     tool.TextureId = "rbxasset://Textures/Sword128.png"
     tool.RequiresHandle = true
     tool.CanBeDropped = false
-    tool.ToolTip = "【影刃】闇と冷気を纏う伝説の黒刃 | ダメージ: 55 | 縦振り斬撃"
+    tool.ToolTip = "【影刃】闇と冷気を纏う伝説の黒刃"
 
-    -- ========== ハンドル（元のメッシュは使わない） ========== --
     local Handle = Instance.new("Part", tool)
     Handle.Name = "Handle"
-    Handle.Size = Vector3.new(0.3, 0.3, 0.3)  -- 小さく透明にして実質非表示
+    Handle.Size = Vector3.new(0.3, 0.3, 0.3)
     Handle.Transparency = 1
     Handle.Anchored = false
     Handle.CanCollide = false
 
-    -- ========== 柄部分（黒革巻き） ========== --
     local HandleGrip = Instance.new("Part", Handle)
     HandleGrip.Name = "HandleGrip"
     HandleGrip.Size = Vector3.new(0.28, 1.4, 0.28)
@@ -252,27 +728,6 @@ local function CreateKagebaFinal()
     GripWeld.C0 = CFrame.new(0, 0, 0) * CFrame.Angles(0, 0, math.rad(90))
     GripWeld.Parent = Handle
 
-    -- 柄の波紋装飾
-    local GripPattern = Instance.new("Part", Handle)
-    GripPattern.Size = Vector3.new(0.29, 1.35, 0.29)
-    GripPattern.Material = Enum.Material.Neon
-    GripPattern.Color = Color3.fromRGB(20, 30, 50)
-    GripPattern.Transparency = 0.7
-    GripPattern.CanCollide = false
-    GripPattern.Massless = true
-    
-    local PatternMesh = Instance.new("SpecialMesh")
-    PatternMesh.MeshType = Enum.MeshType.Cylinder
-    PatternMesh.Scale = Vector3.new(0.96, 0.92, 0.96)
-    PatternMesh.Parent = GripPattern
-    
-    local PatternWeld = Instance.new("Weld")
-    PatternWeld.Part0 = Handle
-    PatternWeld.Part1 = GripPattern
-    PatternWeld.C0 = CFrame.new(0, 0, 0) * CFrame.Angles(0, 0, math.rad(90))
-    PatternWeld.Parent = Handle
-
-    -- ========== ポメル ========== --
     local Pommel = Instance.new("Part", Handle)
     Pommel.Shape = Enum.PartType.Ball
     Pommel.Size = Vector3.new(0.45, 0.45, 0.45)
@@ -288,7 +743,6 @@ local function CreateKagebaFinal()
     PommelWeld.C0 = CFrame.new(0, -0.85, 0)
     PommelWeld.Parent = Handle
 
-    -- ========== 鍔（獣モチーフ） ========== --
     local Guard = Instance.new("Part", Handle)
     Guard.Size = Vector3.new(1.6, 0.22, 0.5)
     Guard.Material = Enum.Material.Metal
@@ -309,35 +763,11 @@ local function CreateKagebaFinal()
     GuardWeld.C0 = CFrame.new(0, 0.7, 0) * CFrame.Angles(0, 0, math.rad(90))
     GuardWeld.Parent = Handle
 
-    -- 鍔の獣の目
-    local GuardEye1 = Instance.new("Part", Guard)
-    GuardEye1.Size = Vector3.new(0.16, 0.16, 0.16)
-    GuardEye1.Shape = Enum.PartType.Ball
-    GuardEye1.Material = Enum.Material.Neon
-    GuardEye1.Color = Color3.fromRGB(60, 100, 180)
-    GuardEye1.CanCollide = false
-    GuardEye1.Massless = true
-    
-    local Eye1Weld = Instance.new("Weld")
-    Eye1Weld.Part0 = Guard
-    Eye1Weld.Part1 = GuardEye1
-    Eye1Weld.C0 = CFrame.new(0.5, 0, 0)
-    Eye1Weld.Parent = Guard
-    
-    local GuardEye2 = GuardEye1:Clone()
-    GuardEye2.Parent = Guard
-    local Eye2Weld = Instance.new("Weld")
-    Eye2Weld.Part0 = Guard
-    Eye2Weld.Part1 = GuardEye2
-    Eye2Weld.C0 = CFrame.new(-0.5, 0, 0)
-    Eye2Weld.Parent = Guard
-
-    -- ========== 刃（完全オリジナル・黒） ========== --
     local Blade = Instance.new("Part", Handle)
     Blade.Name = "Blade"
     Blade.Size = Vector3.new(0.15, 4, 0.65)
     Blade.Material = Enum.Material.Glass
-    Blade.Color = Color3.fromRGB(0, 0, 0)  -- 完全な黒
+    Blade.Color = Color3.fromRGB(0, 0, 0)
     Blade.Reflectance = 0.5
     Blade.Transparency = 0.03
     Blade.CanCollide = false
@@ -345,7 +775,6 @@ local function CreateKagebaFinal()
     
     local BladeMesh = Instance.new("SpecialMesh")
     BladeMesh.MeshType = Enum.MeshType.Wedge
-    BladeMesh.Scale = Vector3.new(1, 1, 1)
     BladeMesh.Parent = Blade
     
     local BladeWeld = Instance.new("Weld")
@@ -354,39 +783,9 @@ local function CreateKagebaFinal()
     BladeWeld.C0 = CFrame.new(0, 2.9, 0) * CFrame.Angles(math.rad(180), 0, 0)
     BladeWeld.Parent = Handle
 
-    -- 刃の波紋（うっすら青）
-    local BladeHamon = Instance.new("Part", Blade)
-    BladeHamon.Size = Vector3.new(0.16, 3.9, 0.63)
-    BladeHamon.Material = Enum.Material.Neon
-    BladeHamon.Color = Color3.fromRGB(30, 50, 90)
-    BladeHamon.Transparency = 0.8
-    BladeHamon.CanCollide = false
-    BladeHamon.Massless = true
-    
-    local HamonMesh = Instance.new("SpecialMesh")
-    HamonMesh.MeshType = Enum.MeshType.Wedge
-    HamonMesh.Scale = Vector3.new(0.97, 0.97, 0.97)
-    HamonMesh.Parent = BladeHamon
-    
-    local HamonWeld = Instance.new("Weld")
-    HamonWeld.Part0 = Blade
-    HamonWeld.Part1 = BladeHamon
-    HamonWeld.C0 = CFrame.new(0, 0, 0)
-    HamonWeld.Parent = Blade
-
-    -- ========== エフェクト（黒いオーラ） ========== --
-    
-    -- 黒い光
-    local BladeLight = Instance.new("PointLight", Blade)
-    BladeLight.Color = Color3.fromRGB(10, 20, 40)
-    BladeLight.Range = 10
-    BladeLight.Brightness = 1.8
-    BladeLight.Shadows = true
-
-    -- 黒いオーラ
     local DarkAura = Instance.new("ParticleEmitter", Blade)
     DarkAura.Texture = "rbxassetid://243662263"
-    DarkAura.Color = ColorSequence.new(Color3.fromRGB(0, 0, 0))  -- 完全な黒
+    DarkAura.Color = ColorSequence.new(Color3.fromRGB(0, 0, 0))
     DarkAura.Size = NumberSequence.new({
         NumberSequenceKeypoint.new(0, 0.5),
         NumberSequenceKeypoint.new(0.5, 1.8),
@@ -394,98 +793,30 @@ local function CreateKagebaFinal()
     })
     DarkAura.Transparency = NumberSequence.new({
         NumberSequenceKeypoint.new(0, 0.5),
-        NumberSequenceKeypoint.new(0.3, 0.2),
         NumberSequenceKeypoint.new(1, 1)
     })
     DarkAura.Lifetime = NumberRange.new(1.5, 3)
     DarkAura.Rate = 35
     DarkAura.Speed = NumberRange.new(0.8, 2.5)
-    DarkAura.SpreadAngle = Vector2.new(25, 25)
-    DarkAura.Rotation = NumberRange.new(-180, 180)
-    DarkAura.RotSpeed = NumberRange.new(-50, 50)
-    DarkAura.LightEmission = 0
-    DarkAura.ZOffset = -0.15
 
-    -- 青みの粒子（控えめ）
-    local BlueParticle = Instance.new("ParticleEmitter", Blade)
-    BlueParticle.Texture = "rbxassetid://241809795"
-    BlueParticle.Color = ColorSequence.new(Color3.fromRGB(40, 70, 120))
-    BlueParticle.Size = NumberSequence.new({
-        NumberSequenceKeypoint.new(0, 0.08),
-        NumberSequenceKeypoint.new(1, 0.15)
-    })
-    BlueParticle.Transparency = NumberSequence.new({
-        NumberSequenceKeypoint.new(0, 0.3),
-        NumberSequenceKeypoint.new(1, 1)
-    })
-    BlueParticle.Lifetime = NumberRange.new(0.7, 1.3)
-    BlueParticle.Rate = 30
-    BlueParticle.Speed = NumberRange.new(0.3, 1)
-    BlueParticle.LightEmission = 0.8
-    BlueParticle.LockedToPart = true
-
-    -- 斬撃軌跡（黒メイン）
-    local Trail = Instance.new("Trail", Blade)
-    Trail.Color = ColorSequence.new{
-        ColorSequenceKeypoint.new(0, Color3.fromRGB(40, 70, 120)),
-        ColorSequenceKeypoint.new(0.5, Color3.fromRGB(10, 15, 30)),
-        ColorSequenceKeypoint.new(1, Color3.fromRGB(0, 0, 0))
-    }
-    Trail.Transparency = NumberSequence.new({
-        NumberSequenceKeypoint.new(0, 0.15),
-        NumberSequenceKeypoint.new(0.5, 0.5),
-        NumberSequenceKeypoint.new(1, 1)
-    })
-    Trail.Lifetime = 0.7
-    Trail.MinLength = 0.05
-    Trail.LightEmission = 0.5
-    Trail.LightInfluence = 0.3
-    Trail.Enabled = false
-    
-    local Att0 = Instance.new("Attachment", Blade)
-    Att0.Position = Vector3.new(0, 2, 0)
-    
-    local Att1 = Instance.new("Attachment", Blade)
-    Att1.Position = Vector3.new(0, -2, 0)
-    
-    Trail.Attachment0 = Att0
-    Trail.Attachment1 = Att1
-
-    -- ========== サウンド ========== --
-    
     local Unsheath = Instance.new("Sound", Handle)
     Unsheath.SoundId = "rbxassetid://12222225"
     Unsheath.Volume = 1
-    Unsheath.TimePosition = 0
 
     local SwordSlash = Instance.new("Sound", Handle)
     SwordSlash.SoundId = "rbxassetid://12222216"
     SwordSlash.Volume = 1.3
-    SwordSlash.Pitch = 0.9
-    SwordSlash.TimePosition = 0
 
-    local HitSound = Instance.new("Sound", Handle)
-    HitSound.SoundId = "rbxassetid://566593606"
-    HitSound.Volume = 1.6
-    HitSound.Pitch = 0.7
-
-    -- ========== 縦振りアニメーション ========== --
-    
     local VerticalSlashAnim = Instance.new("Animation", tool)
-    VerticalSlashAnim.AnimationId = "rbxassetid://186934658"  -- 縦振りアニメーション
+    VerticalSlashAnim.AnimationId = "rbxassetid://186934658"
     local AnimTrack = plr.Character.Humanoid:LoadAnimation(VerticalSlashAnim)
 
-    -- ========== 戦闘システム ========== --
-    
     local db = true
     local da = false
-    local hiddenfling = false
 
     tool.Equipped:Connect(function()
         Unsheath:Play()
-        Trail.Enabled = true
         DarkAura.Rate = 55
-        BladeLight.Brightness = 2.5
         
         wait(1)
         
@@ -495,21 +826,9 @@ local function CreateKagebaFinal()
                 SwordSlash:Play()
                 AnimTrack:Play()
                 
-                -- 斬撃エフェクト強化
-                BladeLight.Brightness = 4
-                BladeLight.Color = Color3.fromRGB(50, 80, 150)
-                DarkAura.Rate = 100
-                
                 wait()
                 da = true
                 db = true
-                
-                -- エフェクトリセット
-                task.delay(0.6, function()
-                    BladeLight.Brightness = 2.5
-                    BladeLight.Color = Color3.fromRGB(10, 20, 40)
-                    DarkAura.Rate = 55
-                end)
                 
                 wait(1.5)
                 da = false
@@ -519,135 +838,34 @@ local function CreateKagebaFinal()
     end)
 
     tool.Unequipped:Connect(function()
-        Trail.Enabled = false
         DarkAura.Rate = 35
-        BladeLight.Brightness = 1.8
         da = false
         db = true
     end)
 
-    -- ========== ヒット判定 ========== --
-    
     Blade.Touched:Connect(function(hit)
         if da == true then
             local enemyHumanoid = hit.Parent:FindFirstChild("Humanoid")
             if enemyHumanoid ~= nil then
-                local enemy = game.Players:FindFirstChild(hit.Parent.Name)
-                
-                -- ダメージ処理
                 enemyHumanoid:TakeDamage(55)
-                HitSound:Play()
-                
-                -- ヒットエフェクト（黒い爆発）
-                local HitEffect = Instance.new("Part")
-                HitEffect.Size = Vector3.new(3, 3, 3)
-                HitEffect.Shape = Enum.PartType.Ball
-                HitEffect.Material = Enum.Material.Neon
-                HitEffect.Color = Color3.fromRGB(0, 0, 0)
-                HitEffect.Transparency = 0.15
-                HitEffect.Anchored = true
-                HitEffect.CanCollide = false
-                HitEffect.CFrame = hit.CFrame
-                HitEffect.Parent = workspace
-                
-                -- 闇侵食エフェクト
-                local DarkEffect = Instance.new("ParticleEmitter")
-                DarkEffect.Texture = "rbxassetid://243662263"
-                DarkEffect.Color = ColorSequence.new(Color3.fromRGB(0, 0, 0))
-                DarkEffect.Size = NumberSequence.new(2.5)
-                DarkEffect.Transparency = NumberSequence.new({
-                    NumberSequenceKeypoint.new(0, 0.3),
-                    NumberSequenceKeypoint.new(1, 1)
-                })
-                DarkEffect.Lifetime = NumberRange.new(0.8)
-                DarkEffect.Rate = 200
-                DarkEffect.Speed = NumberRange.new(6)
-                DarkEffect.SpreadAngle = Vector2.new(180, 180)
-                DarkEffect.Parent = HitEffect
-                DarkEffect.Enabled = true
-                
-                -- 青い衝撃波（控えめ）
-                local ShockWave = Instance.new("Part")
-                ShockWave.Size = Vector3.new(0.8, 0.8, 0.8)
-                ShockWave.Shape = Enum.PartType.Ball
-                ShockWave.Material = Enum.Material.Neon
-                ShockWave.Color = Color3.fromRGB(40, 70, 120)
-                ShockWave.Transparency = 0.4
-                ShockWave.Anchored = true
-                ShockWave.CanCollide = false
-                ShockWave.CFrame = hit.CFrame
-                ShockWave.Parent = workspace
-                
-                -- 拡散アニメーション
-                task.spawn(function()
-                    for i = 0, 1, 0.06 do
-                        HitEffect.Size = HitEffect.Size + Vector3.new(1, 1, 1)
-                        HitEffect.Transparency = 0.15 + (i * 0.85)
-                        
-                        ShockWave.Size = ShockWave.Size + Vector3.new(2, 2, 2)
-                        ShockWave.Transparency = 0.4 + (i * 0.6)
-                        
-                        task.wait(0.025)
-                    end
-                    HitEffect:Destroy()
-                    ShockWave:Destroy()
-                end)
-                
-                -- Fling処理
-                if enemy and enemy.Name ~= plr.Name then
-                    if not game:GetService("ReplicatedStorage"):FindFirstChild("juisdfj0i32i0eidsuf0iok") then
-                        hiddenfling = true
-                        local detection = Instance.new("Decal")
-                        detection.Name = "juisdfj0i32i0eidsuf0iok"
-                        detection.Parent = game:GetService("ReplicatedStorage")
-                        
-                        task.spawn(function()
-                            local hrp, c, vel, movel = nil, nil, nil, 0.1
-                            while hiddenfling do
-                                game:GetService("RunService").Heartbeat:Wait()
-                                local lp = game.Players.LocalPlayer
-                                c = lp.Character
-                                hrp = c:FindFirstChild("HumanoidRootPart") or c:FindFirstChild("Torso") or c:FindFirstChild("UpperTorso")
-                                
-                                if hrp and hrp.Parent then
-                                    vel = hrp.Velocity
-                                    hrp.Velocity = vel * 10000 + Vector3.new(0, 10000, 0)
-                                    game:GetService("RunService").RenderStepped:Wait()
-                                    if hrp and hrp.Parent then
-                                        hrp.Velocity = vel
-                                    end
-                                    game:GetService("RunService").Stepped:Wait()
-                                    if hrp and hrp.Parent then
-                                        hrp.Velocity = vel + Vector3.new(0, movel, 0)
-                                        movel = movel * -1
-                                    end
-                                end
-                            end
-                        end)
-                    end
-                end
             end
         end
-        
-        wait(2)
-        hiddenfling = false
     end)
 
     Rayfield:Notify({
         Title = "⚔️ 影刃 - 召喚完了",
-        Content = "闇の力が解き放たれた。縦振りで敵を斬り裂け。",
+        Content = "闇の力が解き放たれた",
         Duration = 4,
         Image = 4483362458,
     })
 end
 
 -- ========== メインタブ ========== --
-
 local SummonButton = MainTab:CreateButton({
-   Name = "⚔️ 影刃を召喚する（演出あり）",
+   Name = "⚔️ 影刃を召喚する（超豪華演出）",
    Callback = function()
-        PlaySummonCutscene(game.Players.LocalPlayer)
-        wait(5)
+        PlayUltimateCutscene(game.Players.LocalPlayer)
+        wait(12)
         CreateKagebaFinal()
    end,
 })
@@ -659,37 +877,37 @@ local QuickSummonButton = MainTab:CreateButton({
    end,
 })
 
-MainTab:CreateSection("--- 剣の詳細 ---")
+-- ========== 演出タブ ========== --
+CinemaTab:CreateLabel("🎬 超豪華演出の内容")
+CinemaTab:CreateLabel("合計: 100種類のアニメーション")
+CinemaTab:CreateLabel("")
+CinemaTab:CreateLabel("背景演出 (50種類):")
+CinemaTab:CreateLabel("• 神秘的な木々 x10")
+CinemaTab:CreateLabel("• 浮遊水晶 x10")
+CinemaTab:CreateLabel("• 古代の柱 x10")
+CinemaTab:CreateLabel("• 魔法陣 x5")
+CinemaTab:CreateLabel("• 浮遊する本 x5")
+CinemaTab:CreateLabel("• 炎の柱 x5")
+CinemaTab:CreateLabel("• 星空 x5")
+CinemaTab:CreateLabel("")
+CinemaTab:CreateLabel("プレイヤー演出 (50種類):")
+CinemaTab:CreateLabel("• 白い翼 + オーラ")
+CinemaTab:CreateLabel("• 翼を広げる x10")
+CinemaTab:CreateLabel("• 全身発光 x10")
+CinemaTab:CreateLabel("• 階段降下 (各5種) x10")
+CinemaTab:CreateLabel("• 衝撃波 x10")
+CinemaTab:CreateLabel("• 翼消失 x10")
 
-MainTab:CreateLabel("名称: 影刃 (Kageba)")
-MainTab:CreateLabel("形状: 完全オリジナル黒刃")
-MainTab:CreateLabel("色: 鏡面ブラック（純黒）")
-MainTab:CreateLabel("オーラ: 黒い闇のオーラ")
-MainTab:CreateLabel("攻撃: 縦振り斬撃")
-MainTab:CreateLabel("ダメージ: 55 + Fling効果")
-
--- ========== 演出設定タブ ========== --
-
-EffectTab:CreateSection("--- 召喚演出について ---")
-
-EffectTab:CreateLabel("演出内容:")
-EffectTab:CreateLabel("1. 上空に闇の背景が出現")
-EffectTab:CreateLabel("2. 階段が生成される")
-EffectTab:CreateLabel("3. 剣が階段を降りてくる")
-EffectTab:CreateLabel("4. 着地時に衝撃波が発生")
-EffectTab:CreateLabel("5. 剣がバックパックに追加")
-
-local TestCutsceneButton = EffectTab:CreateButton({
-   Name = "🎬 召喚演出のみをテスト再生",
+local TestButton = CinemaTab:CreateButton({
+   Name = "🎬 演出のみをテスト再生",
    Callback = function()
-        PlaySummonCutscene(game.Players.LocalPlayer)
+        PlayUltimateCutscene(game.Players.LocalPlayer)
    end,
 })
 
--- 起動通知
 Rayfield:Notify({
-   Title = "🌑 影刃鍛造システム起動",
-   Content = "完全オリジナル黒刃、縦振り攻撃、召喚演出実装済み",
+   Title = "🌟 影刃 Ultimate Cutscene",
+   Content = "100種類のアニメーション搭載！",
    Duration = 5,
    Image = 4483362458,
 })

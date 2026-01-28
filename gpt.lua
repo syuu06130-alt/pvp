@@ -1,75 +1,99 @@
--- Rayfield UI 統合
+-- Rayfield UI統合スクリプト
 local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
 
 local Window = Rayfield:CreateWindow({
-    Name = "影刃生成UI",
-    LoadingTitle = "ダークファンタジー＋SF風",
-    LoadingSubtitle = "剣を召喚するボタン付き",
+    Name = "ダークファンタジー剣生成",
+    LoadingTitle = "影刃生成ツール",
+    LoadingSubtitle = "闇と冷気の剣",
     ConfigurationSaving = {
-        Enabled = true,
-        FolderName = "影刃_UI",
-        FileName = "Config"
+       Enabled = true,
+       FolderName = nil,
+       FileName = "影刃Config"
     },
-    KeySystem = false
+    Discord = {
+       Enabled = false
+    }
 })
 
--- ボタンで剣生成
-Window:CreateButton({
-    Name = "影刃を召喚",
+-- ボタンを作成
+local Tab = Window:CreateTab("影刃", 4483362458)
+
+Tab:CreateButton({
+    Name = "影刃を出現させる",
     Callback = function()
         local player = game.Players.LocalPlayer
-        local char = player.Character or player.CharacterAdded:Wait()
-        local hrp = char:WaitForChild("HumanoidRootPart")
+        local character = player.Character or player.CharacterAdded:Wait()
 
-        -- 剣本体生成
+        -- 剣の生成
         local sword = Instance.new("Tool")
         sword.Name = "影刃"
         sword.RequiresHandle = true
         sword.CanBeDropped = true
-        sword.GripForward = Vector3.new(0,0,-1)
-        sword.GripPos = Vector3.new(0,-1,0)
-        sword.GripRight = Vector3.new(1,0,0)
-        sword.GripUp = Vector3.new(0,1,0)
 
         local handle = Instance.new("Part")
         handle.Name = "Handle"
-        handle.Size = Vector3.new(0.2,4,0.3)
-        handle.Color = Color3.fromRGB(20,20,40) -- 黒＋少し青み
+        handle.Size = Vector3.new(0.3,5,0.7) -- 刀寄りの細長い形
         handle.Material = Enum.Material.Metal
-        handle.Reflectance = 0.3
+        handle.Color = Color3.fromRGB(10,10,30) -- 黒+青み
+        handle.Reflectance = 0.3 -- 光の反射
         handle.Parent = sword
 
-        -- 鍔装飾
+        local mesh = Instance.new("SpecialMesh")
+        mesh.MeshType = Enum.MeshType.FileMesh
+        -- ここでは簡易的にBlade寄せの楕円形
+        mesh.MeshId = "http://www.roblox.com/asset/?id=1234567890" -- 任意でカスタムメッシュに置き換え可能
+        mesh.Scale = Vector3.new(0.2,5,0.7)
+        mesh.Parent = handle
+
+        -- 刃文・装飾の雰囲気（波紋）
+        local decal = Instance.new("Decal")
+        decal.Texture = "http://www.roblox.com/asset/?id=9876543210" -- 波紋テクスチャを用意
+        decal.Face = Enum.NormalId.Top
+        decal.Parent = handle
+
+        -- 鍔（Guard）表現
         local guard = Instance.new("Part")
         guard.Name = "Guard"
-        guard.Size = Vector3.new(0.8,0.3,0.5)
-        guard.Color = Color3.fromRGB(40,40,60)
+        guard.Size = Vector3.new(1,0.3,1)
         guard.Material = Enum.Material.Metal
-        guard.Reflectance = 0.25
-        guard.Position = handle.Position + Vector3.new(0,2,0)
+        guard.Color = Color3.fromRGB(20,20,40)
+        guard.Reflectance = 0.4
+        guard.Anchored = false
+        guard.CanCollide = false
+        guard.Position = handle.Position + Vector3.new(0,2.4,0)
         guard.Parent = sword
 
-        -- ハンドル装飾
-        local gripDecor = Instance.new("CylinderMesh")
-        gripDecor.Scale = Vector3.new(1,1,1)
-        gripDecor.Parent = handle
+        -- 柄（グリップ）
+        local grip = Instance.new("Part")
+        grip.Name = "Grip"
+        grip.Size = Vector3.new(0.3,1.5,0.3)
+        grip.Material = Enum.Material.SmoothPlastic
+        grip.Color = Color3.fromRGB(15,15,15)
+        grip.Parent = sword
 
-        -- 龍モチーフや波紋は装飾的にMeshで表現
-        local deco = Instance.new("SpecialMesh")
-        deco.MeshType = Enum.MeshType.FileMesh
-        deco.MeshId = "rbxassetid://11223344" -- 仮龍モチーフID
-        deco.TextureId = "rbxassetid://55667788" -- 仮テクスチャID
-        deco.Scale = Vector3.new(0.5,4,0.5)
-        deco.Parent = handle
+        -- ToolのHandle設定
+        sword.Handle = handle
 
-        -- オーラ・特殊効果
-        local aura = Instance.new("PointLight")
-        aura.Color = Color3.fromRGB(50,50,70)
-        aura.Range = 6
-        aura.Brightness = 1
+        -- 剣をプレイヤーに追加
+        sword.Parent = player.Backpack
+
+        -- 特殊オーラ演出
+        local aura = Instance.new("ParticleEmitter")
+        aura.Texture = "http://www.roblox.com/asset/?id=1122334455" -- 闇の気配を表現するパーティクル
+        aura.Rate = 3
+        aura.Lifetime = NumberRange.new(0.5,1.5)
+        aura.Speed = NumberRange.new(0)
+        aura.LightEmission = 0.5
+        aura.Size = NumberSequence.new({NumberSequenceKeypoint.new(0,0.5), NumberSequenceKeypoint.new(1,0)})
         aura.Parent = handle
 
-        -- 剣をプレイヤーに装備
-        sword.Parent = player.Backpack
+        -- 装備したら少し光る演出
+        handle.Touched:Connect(function(hit)
+            if hit.Parent:FindFirstChild("Humanoid") then
+                handle.Color = Color3.fromRGB(20,20,50)
+                wait(0.2)
+                handle.Color = Color3.fromRGB(10,10,30)
+            end
+        end)
     end
 })

@@ -1,254 +1,300 @@
 -- Rayfield UI 初期化
 local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
+
+-- プレイヤーサービスの取得
+local Players = game:GetService("Players")
+local player = Players.LocalPlayer
+local character = player.Character or player.CharacterAdded:Wait()
+
+-- メインウィンドウの作成
 local Window = Rayfield:CreateWindow({
-    Name = "闇の剣 「影刃」 生成システム",
-    LoadingTitle = "影刃システム起動中...",
-    LoadingSubtitle = "闇の気配を召喚しています",
-    ConfigurationSaving = {
-        Enabled = true,
-        FolderName = "影刃システム",
-        FileName = "設定"
-    },
-    Discord = {
-        Enabled = false,
-        Invite = "noinvite",
-        RememberJoins = true
-    },
-    KeySystem = false,
+   Name = "影刃 - 闇の神器",
+   LoadingTitle = "影刃召喚システム",
+   LoadingSubtitle = "闇と冷気の剣を召喚中...",
+   ConfigurationSaving = {
+      Enabled = true,
+      FolderName = "ShadowBlade",
+      FileName = "Config"
+   },
+   Discord = {
+      Enabled = false,
+      Invite = "noinvitelink",
+      RememberJoins = true
+   },
+   KeySystem = false,
 })
 
--- メインページの作成
-local MainTab = Window:CreateTab("メイン", 4483362458)
-local MainSection = MainTab:CreateSection("影刃 召喚インターフェース")
+-- メインメニュータブ
+local MainTab = Window:CreateTab("剣管理", 4483362458)
 
--- 剣生成関数
+-- 剣生成セクション
+local SwordSection = MainTab:CreateSection("影刃の召喚")
+
+-- 剣を生成する関数
 local function createShadowBlade()
-    -- プレイヤーの取得
-    local player = game.Players.LocalPlayer
-    local character = player.Character or player.CharacterAdded:Wait()
-    
-    -- 古い剣を削除
-    for _, tool in ipairs(character:GetChildren()) do
-        if tool:IsA("Tool") and tool.Name == "影刃" then
-            tool:Destroy()
+    -- 既存の剣を削除
+    local backpack = player:FindFirstChild("Backpack")
+    if backpack then
+        local existingSword = backpack:FindFirstChild("影刃")
+        if existingSword then
+            existingSword:Destroy()
         end
     end
     
-    -- 剣の基本Tool作成
-    local sword = Instance.new("Tool")
-    sword.Name = "影刃"
-    sword.Parent = character
-    sword.ToolTip = "闇と冷気を纏う威圧的な剣"
-    sword.CanBeDropped = false
+    -- ツールオブジェクトの作成
+    local tool = Instance.new("Tool")
+    tool.Name = "影刃"
+    tool.ToolTip = "闇と冷気を纏う威圧的な剣"
+    tool.CanBeDropped = false
     
-    -- 剣のメッシュ作成
+    -- ハンドル（握り部分）
     local handle = Instance.new("Part")
     handle.Name = "Handle"
-    handle.Size = Vector3.new(0.8, 5.5, 0.8)
+    handle.Size = Vector3.new(0.4, 0.8, 0.4)
     handle.Material = Enum.Material.Neon
-    handle.BrickColor = BrickColor.new("Really black")
-    handle.Reflectance = 0.8
+    handle.Color = Color3.fromRGB(5, 5, 15)
+    handle.Reflectance = 0.3
     handle.Transparency = 0.1
-    handle.Parent = sword
+    handle.Parent = tool
     
-    -- 刀身のメッシュ
+    -- 特殊効果（闇のオーラ）
+    local aura = Instance.new("ParticleEmitter")
+    aura.Name = "DarkAura"
+    aura.Texture = "rbxassetid://242877747"
+    aura.Color = ColorSequence.new(Color3.fromRGB(10, 10, 30))
+    aura.Transparency = NumberSequence.new(0.5)
+    aura.Size = NumberSequence.new(0.2, 0.5)
+    aura.Lifetime = NumberRange.new(1, 2)
+    aura.Rate = 15
+    aura.Speed = NumberRange.new(0.5, 1)
+    aura.Parent = handle
+    
+    -- 冷気のエフェクト
+    local coldEffect = Instance.new("ParticleEmitter")
+    coldEffect.Name = "ColdEffect"
+    coldEffect.Texture = "rbxassetid://243483364"
+    coldEffect.Color = ColorSequence.new(Color3.fromRGB(150, 200, 255))
+    coldEffect.Transparency = NumberSequence.new(0.3)
+    coldEffect.Size = NumberSequence.new(0.1, 0.3)
+    coldEffect.Lifetime = NumberRange.new(0.5, 1)
+    coldEffect.Rate = 10
+    coldEffect.VelocityInheritance = 0
+    coldEffect.Parent = handle
+    
+    -- 刃のメイン部分
+    local blade = Instance.new("Part")
+    blade.Name = "Blade"
+    blade.Size = Vector3.new(0.3, 3, 0.1)
+    blade.Material = Enum.Material.Neon
+    blade.Color = Color3.fromRGB(0, 0, 0)
+    blade.Reflectance = 0.8
+    blade.Transparency = 0.05
+    blade.Parent = tool
+    
+    -- 刃のメッシュ（刀型）
     local bladeMesh = Instance.new("SpecialMesh")
     bladeMesh.MeshType = Enum.MeshType.FileMesh
-    bladeMesh.MeshId = "rbxassetid://5608315931" -- 刀型メッシュ
-    bladeMesh.Scale = Vector3.new(1.2, 1.5, 0.05)
-    bladeMesh.VertexColor = Vector3.new(0.1, 0.2, 0.3)
-    bladeMesh.Parent = handle
+    bladeMesh.MeshId = "rbxassetid://1070946"
+    bladeMesh.Scale = Vector3.new(0.2, 2, 0.05)
+    bladeMesh.Parent = blade
     
-    -- 鍔（ガード）の装飾
+    -- 表面の質感
+    local surface = Instance.new("SurfaceAppearance")
+    surface.ColorMap = "rbxasset://textures/StudioToolbox/Materials/CharcoalSmooth.png"
+    surface.MetalnessMap = "rbxassetid://148992355"
+    surface.RoughnessMap = "rbxassetid://148992394"
+    surface.Parent = blade
+    
+    -- 刃先の細い部分
+    local tip = Instance.new("WedgePart")
+    tip.Name = "Tip"
+    tip.Size = Vector3.new(0.3, 0.3, 0.1)
+    tip.Material = Enum.Material.Neon
+    tip.Color = Color3.fromRGB(0, 10, 30)
+    tip.Reflectance = 0.9
+    tip.Parent = tool
+    
+    -- 波紋模様の装飾
+    local pattern = Instance.new("Part")
+    pattern.Name = "Pattern"
+    pattern.Size = Vector3.new(0.35, 2.5, 0.15)
+    pattern.Material = Enum.Material.Neon
+    pattern.Color = Color3.fromRGB(20, 40, 100)
+    pattern.Transparency = 0.7
+    pattern.Parent = tool
+    
+    local patternMesh = Instance.new("SpecialMesh")
+    patternMesh.MeshType = Enum.MeshType.Sphere
+    patternMesh.Scale = Vector3.new(1, 10, 0.1)
+    patternMesh.Parent = pattern
+    
+    -- 鍔（ツバ）部分
     local guard = Instance.new("Part")
     guard.Name = "Guard"
-    guard.Size = Vector3.new(2, 0.3, 2)
-    guard.Position = handle.Position + Vector3.new(0, 0.5, 0)
+    guard.Size = Vector3.new(0.8, 0.1, 0.8)
     guard.Material = Enum.Material.Neon
-    guard.BrickColor = BrickColor.new("Dark indigo")
-    guard.Transparency = 0.2
-    guard.Anchored = false
-    guard.CanCollide = false
-    guard.Parent = handle
+    guard.Color = Color3.fromRGB(10, 10, 30)
+    guard.Reflectance = 0.4
+    guard.Parent = tool
     
-    local weld = Instance.new("Weld")
-    weld.Part0 = handle
-    weld.Part1 = guard
-    weld.C0 = CFrame.new(0, 0.5, 0)
-    weld.Parent = guard
+    local guardMesh = Instance.new("SpecialMesh")
+    guardMesh.MeshType = Enum.MeshType.FileMesh
+    guardMesh.MeshId = "rbxassetid://1071366" -- ドラゴンモチーフ風
+    guardMesh.Scale = Vector3.new(0.3, 0.1, 0.3)
+    guardMesh.Parent = guard
     
-    -- 柄（グリップ）の装飾
-    local grip = Instance.new("Part")
-    grip.Name = "Grip"
-    grip.Size = Vector3.new(0.9, 3, 0.9)
-    grip.Material = Enum.Material.Fabric
-    grip.BrickColor = BrickColor.new("Really black")
-    grip.Parent = handle
-    
-    local gripWeld = Instance.new("Weld")
-    gripWeld.Part0 = handle
-    gripWeld.Part1 = grip
-    gripWeld.C0 = CFrame.new(0, -1.5, 0)
-    gripWeld.Parent = grip
+    -- 柄の装飾
+    local handleDeco = Instance.new("Part")
+    handleDeco.Name = "HandleDecoration"
+    handleDeco.Size = Vector3.new(0.45, 0.7, 0.45)
+    handleDeco.Material = Enum.Material.Neon
+    handleDeco.Color = Color3.fromRGB(15, 20, 40)
+    handleDeco.Transparency = 0.3
+    handleDeco.Parent = tool
     
     -- ポメル（柄頭）
     local pommel = Instance.new("Part")
     pommel.Name = "Pommel"
     pommel.Shape = Enum.PartType.Ball
-    pommel.Size = Vector3.new(1, 1, 1)
+    pommel.Size = Vector3.new(0.5, 0.5, 0.5)
     pommel.Material = Enum.Material.Neon
-    pommel.BrickColor = BrickColor.new("Really black")
-    pommel.Reflectance = 0.5
-    pommel.Parent = handle
+    pommel.Color = Color3.fromRGB(0, 0, 10)
+    pommel.Reflectance = 0.3
+    pommel.Parent = tool
     
+    -- パーツの位置調整
+    local weld = Instance.new("Weld")
+    weld.Part0 = handle
+    weld.C0 = CFrame.new(0, 0, 0)
+    
+    -- 刃の接続
+    local bladeWeld = Instance.new("Weld")
+    bladeWeld.Part0 = handle
+    bladeWeld.Part1 = blade
+    bladeWeld.C0 = CFrame.new(0, 1.5, 0)
+    bladeWeld.Parent = blade
+    
+    -- 刃先の接続
+    local tipWeld = Instance.new("Weld")
+    tipWeld.Part0 = blade
+    tipWeld.Part1 = tip
+    tipWeld.C0 = CFrame.new(0, 1.65, 0)
+    tipWeld.Parent = tip
+    
+    -- 波紋模様の接続
+    local patternWeld = Instance.new("Weld")
+    patternWeld.Part0 = blade
+    patternWeld.Part1 = pattern
+    patternWeld.C0 = CFrame.new(0, 0, 0.05)
+    patternWeld.Parent = pattern
+    
+    -- 鍔の接続
+    local guardWeld = Instance.new("Weld")
+    guardWeld.Part0 = handle
+    guardWeld.Part1 = guard
+    guardWeld.C0 = CFrame.new(0, 0.45, 0)
+    guardWeld.Parent = guard
+    
+    -- 柄装飾の接続
+    local handleDecoWeld = Instance.new("Weld")
+    handleDecoWeld.Part0 = handle
+    handleDecoWeld.Part1 = handleDeco
+    handleDecoWeld.C0 = CFrame.new(0, 0, 0)
+    handleDecoWeld.Parent = handleDeco
+    
+    -- ポメルの接続
     local pommelWeld = Instance.new("Weld")
     pommelWeld.Part0 = handle
     pommelWeld.Part1 = pommel
-    pommelWeld.C0 = CFrame.new(0, -2.8, 0)
+    pommelWeld.C0 = CFrame.new(0, -0.65, 0)
     pommelWeld.Parent = pommel
     
-    -- 特殊エフェクト
-    local pointLight = Instance.new("PointLight")
-    pointLight.Name = "ShadowAura"
-    pointLight.Color = Color3.fromRGB(20, 60, 150)
-    pointLight.Brightness = 0.5
-    pointLight.Range = 10
-    pointLight.Shadows = true
-    pointLight.Parent = handle
-    
-    local particleEmitter = Instance.new("ParticleEmitter")
-    particleEmitter.Name = "DarkMist"
-    particleEmitter.Color = ColorSequence.new({
-        ColorSequenceKeypoint.new(0, Color3.fromRGB(10, 20, 50)),
-        ColorSequenceKeypoint.new(1, Color3.fromRGB(0, 0, 0))
-    })
-    particleEmitter.Size = NumberSequence.new({
-        NumberSequenceKeypoint.new(0, 0.5),
-        NumberSequenceKeypoint.new(1, 1.5)
-    })
-    particleEmitter.Transparency = NumberSequence.new({
-        NumberSequenceKeypoint.new(0, 0.7),
-        NumberSequenceKeypoint.new(1, 1)
-    })
-    particleEmitter.Lifetime = NumberRange.new(1, 2)
-    particleEmitter.Rate = 10
-    particleEmitter.Speed = NumberRange.new(0.5, 2)
-    particleEmitter.Parent = handle
-    
-    -- 剣の質感を調整
-    local surfaceAppearance = Instance.new("SurfaceAppearance")
-    surfaceAppearance.Name = "MirrorFinish"
-    surfaceAppearance.ColorMap = "rbxassetid://0"
-    surfaceAppearance.MetalnessMap = "rbxassetid://0"
-    surfaceAppearance.NormalMap = "rbxassetid://0"
-    surfaceAppearance.RoughnessMap = "rbxassetid://0"
-    surfaceAppearance.Parent = handle
-    
-    -- アニメーション用スクリプト
-    local swingScript = Instance.new("Script")
-    swingScript.Name = "SwingAnimation"
-    swingScript.Source = [[
-        local tool = script.Parent
-        local handle = tool:WaitForChild("Handle")
+    -- ツールのアクティブ時の効果
+    tool.Activated:Connect(function()
+        -- 青みがかった光のエフェクト
+        local slash = Instance.new("ParticleEmitter")
+        slash.Texture = "rbxassetid://243483372"
+        slash.Color = ColorSequence.new(Color3.fromRGB(50, 100, 255))
+        slash.Size = NumberSequence.new(0.5, 1)
+        slash.Lifetime = NumberRange.new(0.3, 0.5)
+        slash.Rate = 50
+        slash.Speed = NumberRange.new(5, 10)
+        slash.Parent = blade
         
-        tool.Activated:Connect(function()
-            -- 剣を振るアニメーション
-            for i = 1, 10 do
-                tool.Grip = CFrame.Angles(0, 0, math.rad(i * 5))
-                wait(0.01)
-            end
-            for i = 10, 1, -1 do
-                tool.Grip = CFrame.Angles(0, 0, math.rad(i * 5))
-                wait(0.01)
-            end
-        end)
+        wait(0.2)
+        slash:Destroy()
+    end)
+    
+    -- 剣を持った時の環境効果
+    tool.Equipped:Connect(function()
+        -- 冷気エフェクトの強化
+        coldEffect.Rate = 25
         
-        -- 装備時エフェクト強化
-        tool.Equipped:Connect(function()
-            local light = handle:FindFirstChild("ShadowAura")
-            if light then
-                light.Brightness = 1.0
-            end
-        end)
+        -- 画面に微かなブルーム効果を追加（簡易版）
+        local lighting = game:GetService("Lighting")
+        local originalBrightness = lighting.Brightness
+        local originalExposure = lighting.ExposureCompensation
+        
+        lighting.Brightness = originalBrightness * 0.9
+        lighting.ExposureCompensation = originalExposure - 0.1
         
         tool.Unequipped:Connect(function()
-            local light = handle:FindFirstChild("ShadowAura")
-            if light then
-                light.Brightness = 0.5
-            end
+            coldEffect.Rate = 10
+            lighting.Brightness = originalBrightness
+            lighting.ExposureCompensation = originalExposure
         end)
-    ]]
-    swingScript.Parent = sword
-    
-    -- 音響効果
-    local unsheatheSound = Instance.new("Sound")
-    unsheatheSound.Name = "Unsheathe"
-    unsheatheSound.SoundId = "rbxassetid://9125368304" -- 金属音
-    unsheatheSound.Volume = 0.7
-    unsheatheSound.Parent = handle
-    
-    local swingSound = Instance.new("Sound")
-    swingSound.Name = "Swing"
-    swingSound.SoundId = "rbxassetid://9116393111" -- 風切り音
-    swingSound.Volume = 0.5
-    swingSound.Parent = handle
-    
-    -- 装備時音再生
-    sword.Equipped:Connect(function()
-        unsheatheSound:Play()
     end)
     
-    sword.Activated:Connect(function()
-        swingSound:Play()
-    end)
+    -- バックパックに追加
+    tool.Parent = player.Backpack
     
-    -- プレイヤーのインベントリに追加
-    sword.Parent = player.Backpack
-    
+    -- 通知
     Rayfield:Notify({
         Title = "影刃 召喚完了",
-        Content = "闇の剣「影刃」が生成されました。バックパックを確認してください。",
+        Content = "闇と冷気の剣があなたのバックパックに追加されました",
         Duration = 6.5,
         Image = 4483362458,
         Actions = {
             Ignore = {
-                Name = "了解"
-            }
-        }
+                Name = "了解",
+                Callback = function()
+                end
+            },
+        },
     })
+    
+    return tool
 end
 
--- UIボタンの作成
-MainSection:CreateButton({
+-- 剣生成ボタン
+local SwordButton = MainTab:CreateButton({
     Name = "影刃を召喚する",
     Callback = function()
         createShadowBlade()
-    end
+    end,
 })
 
--- 剣の説明セクション
-local DescriptionSection = MainTab:CreateSection("剣の詳細仕様")
-DescriptionSection:CreateLabel("基本色: 鏡面ブラック、滑らかで冷たい金属感")
-DescriptionSection:CreateLabel("形状: 刀寄り、標準的な反り、シャープで直線的")
-DescriptionSection:CreateLabel("刃: 先端極鋭、波紋刃文、背にも波紋刻印")
-DescriptionSection:CreateLabel("鍔: 大きめ装飾的、ドラゴン・獣モチーフ")
-DescriptionSection:CreateLabel("柄: 黒革巻き、龍や獣の彫刻、波紋模様反映")
-DescriptionSection:CreateLabel("ポメル: シンプル丸型")
-DescriptionSection:CreateLabel("重量: 標準的（片手扱いやすい）")
-DescriptionSection:CreateLabel("特殊効果: 微かに闇の気配漂う")
-DescriptionSection:CreateLabel("世界観: ダークファンタジー＋近未来・SF寄り")
-DescriptionSection:CreateLabel("テーマ: 闇と冷気、威圧感・圧倒的な存在感")
+-- 情報セクション
+local InfoSection = MainTab:CreateSection("剣の詳細情報")
 
--- クレジットセクション
-local CreditsSection = MainTab:CreateSection("システム情報")
-CreditsSection:CreateLabel("影刃生成システム v1.0")
-CreditsSection:CreateLabel("設計: 闇の鍛冶屋")
-CreditsSection:CreateLabel("特殊効果: 影魔法研究院")
-CreditsSection:CreateLabel("UI統合: Rayfield Interface")
+-- 剣の説明ラベル
+MainTab:CreateLabel("名前: 影刃")
+MainTab:CreateLabel("基本色: 鏡面ブラック + 青み")
+MainTab:CreateLabel("形状: 刀型、直線的、鋭利")
+MainTab:CreateLabel("装飾: ドラゴン・獣モチーフ")
+MainTab:CreateLabel("特殊効果: 闇の気配 + 冷気オーラ")
+MainTab:CreateLabel("テーマ: 威圧感と圧倒的存在感")
 
+-- 警告メッセージ
+MainTab:CreateParagraph({
+    Title = "警告",
+    Content = "この剣は闇の力を宿しています。取り扱いには十分注意してください。"
+})
+
+-- Rayfield UI の読み込み完了通知
 Rayfield:Notify({
-    Title = "影刃システム 起動完了",
-    Content = "システムは正常に起動しました。",
-    Duration = 3,
+    Title = "影刃システム 起動",
+    Content = "システムが正常に起動しました。剣を召喚する準備ができています。",
+    Duration = 5,
     Image = 4483362458,
 })

@@ -1,26 +1,29 @@
 --[[
-    『影刃』生成システム - Kageba Forge
+    『影刃』生成システム - 闇の降臨
     テーマ: ダークファンタジー × 近未来SF
-    仕様: 鏡面ブラック + 青みがかった反射、波紋模様、ドラゴンモチーフ
+    仕様: 完全な黒い剣 + 縦振りアニメーション + 降臨エフェクト
 ]]
 
 -- Rayfield UI ロード
 local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
 
--- プレイヤーサービス取得
+-- サービス取得
 local Players = game:GetService("Players")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local TweenService = game:GetService("TweenService")
+local RunService = game:GetService("RunService")
 local player = Players.LocalPlayer
 local backpack = player:WaitForChild("Backpack")
 
 -- メインウィンドウ作成
 local Window = Rayfield:CreateWindow({
-    Name = "影刃 生成システム",
-    LoadingTitle = "闇の刃を鍛造中...",
-    LoadingSubtitle = "Kageba Forge v2.0",
+    Name = "影刃 召喚システム",
+    LoadingTitle = "闇の降臨を準備中...",
+    LoadingSubtitle = "Kageba Forge v3.0",
     ConfigurationSaving = {
         Enabled = true,
         FolderName = "KagebaConfig",
-        FileName = "ShadowBlade"
+        FileName = "ShadowBladeV3"
     },
     Discord = {
         Enabled = false,
@@ -31,7 +34,7 @@ local Window = Rayfield:CreateWindow({
 })
 
 -- メインタブ作成
-local MainTab = Window:CreateTab("武器管理", 4483362458)
+local MainTab = Window:CreateTab("闇の武器庫", 4483362458)
 local WeaponSection = MainTab:CreateSection("影刃の召喚")
 
 -- 剣生成関数
@@ -41,8 +44,8 @@ local function CreateKagebaBlade()
     if existingTool then
         existingTool:Destroy()
         Rayfield:Notify({
-            Title = "警告",
-            Content = "既存の影刃を破棄しました",
+            Title = "更新",
+            Content = "既存の影刃を強化しました",
             Duration = 3,
             Image = 4483362458,
         })
@@ -52,135 +55,135 @@ local function CreateKagebaBlade()
     local character = player.Character or player.CharacterAdded:Wait()
     local humanoid = character:WaitForChild("Humanoid")
     
+    -- 攻撃状態変数
+    local da = false
+    local db = true
+    
     -- ツール作成
     local tool = Instance.new("Tool")
     tool.Name = "影刃"
-    tool.ToolTip = "闇と冷気を纏う、圧倒的な存在感の刀"
+    tool.ToolTip = "闇より降臨する、圧倒的な存在感の刀"
     tool.CanBeDropped = false
     
-    -- ハンドル作成（握り部分）
+    -- ハンドル作成
     local handle = Instance.new("Part")
     handle.Name = "Handle"
-    handle.Size = Vector3.new(0.5, 0.2, 0.5)
-    handle.Transparency = 1
+    handle.Size = Vector3.new(1, 0.8, 4)
+    handle.Transparency = 0.8  -- 半透明で目立たなく
     handle.CanCollide = false
     handle.Anchored = false
     handle.Parent = tool
     
-    -- グリップ設定（刀の持ち方）
-    tool.GripPos = Vector3.new(0, 0, 0)
-    tool.GripForward = Vector3.new(0, 0, 1)
+    -- グリップ設定 - 縦持ち用
+    tool.GripPos = Vector3.new(0, 0, -1.5)
+    tool.GripForward = Vector3.new(0, -1, 0)
     tool.GripRight = Vector3.new(1, 0, 0)
-    tool.GripUp = Vector3.new(0, 1, 0)
+    tool.GripUp = Vector3.new(0, 0, 1)
     
-    -- 剣のメインメッシュ作成
-    local swordMesh = Instance.new("SpecialMesh")
-    swordMesh.MeshId = "rbxassetid://1070946" -- 刀の基本メッシュ
-    swordMesh.TextureId = "" -- テクスチャなしで色を制御
-    swordMesh.Scale = Vector3.new(0.8, 1.2, 0.8)
-    swordMesh.Offset = Vector3.new(0, -0.3, 0)
-    swordMesh.Parent = handle
+    -- ==== 新しい剣のデザイン ====
     
-    -- 質感設定：鏡面ブラック + 青み
-    handle.Material = Enum.Material.Neon
-    handle.Color = Color3.fromRGB(5, 10, 25)
-    handle.Reflectance = 0.6 -- 鏡面反射
-    handle.Transparency = 0.05
+    -- メインブレード（完全な黒）
+    local mainBlade = Instance.new("Part")
+    mainBlade.Name = "MainBlade"
+    mainBlade.Size = Vector3.new(0.25, 4, 0.05)
+    mainBlade.Material = Enum.Material.Neon
+    mainBlade.Color = Color3.fromRGB(0, 0, 0)
+    mainBlade.Reflectance = 0.7
+    mainBlade.Transparency = 0.05
+    mainBlade.CanCollide = false
+    mainBlade.Parent = tool
     
-    -- 刃の部分をより細かく設定
-    local bladeDeco = Instance.new("Part")
-    bladeDeco.Name = "BladeDeco"
-    bladeDeco.Size = Vector3.new(0.2, 3.5, 0.05)
-    bladeDeco.Transparency = 0.1
-    bladeDeco.CanCollide = false
-    bladeDeco.Material = Enum.Material.Neon
-    bladeDeco.Color = Color3.fromRGB(0, 0, 10)
-    bladeDeco.Reflectance = 0.7
+    local bladeMesh = Instance.new("SpecialMesh")
+    bladeMesh.MeshType = Enum.MeshType.Wedge
+    bladeMesh.Scale = Vector3.new(1, 8, 0.2)
+    bladeMesh.Offset = Vector3.new(0, 0, 0)
+    bladeMesh.Parent = mainBlade
     
-    local bladeMesh2 = Instance.new("SpecialMesh")
-    bladeMesh2.MeshType = Enum.MeshType.Wedge
-    bladeMesh2.Scale = Vector3.new(1, 7, 0.2)
-    bladeMesh2.Parent = bladeDeco
+    -- 鋭い先端
+    local bladeTip = Instance.new("WedgePart")
+    bladeTip.Name = "BladeTip"
+    bladeTip.Size = Vector3.new(0.25, 0.3, 0.05)
+    bladeTip.Material = Enum.Material.Neon
+    bladeTip.Color = Color3.fromRGB(0, 0, 0)
+    bladeTip.Reflectance = 0.8
+    bladeTip.CanCollide = false
+    bladeTip.Parent = tool
     
-    -- 波紋模様（刃文）
+    -- 波紋模様（青みを帯びた黒）
     local hamonPattern = Instance.new("Part")
     hamonPattern.Name = "HamonPattern"
-    hamonPattern.Size = Vector3.new(0.21, 3.4, 0.02)
-    hamonPattern.Transparency = 0.7
-    hamonPattern.CanCollide = false
+    hamonPattern.Size = Vector3.new(0.26, 4, 0.02)
     hamonPattern.Material = Enum.Material.Neon
-    hamonPattern.Color = Color3.fromRGB(20, 40, 100)
+    hamonPattern.Color = Color3.fromRGB(5, 10, 30)
+    hamonPattern.Transparency = 0.6
+    hamonPattern.CanCollide = false
+    hamonPattern.Parent = tool
     
     local hamonMesh = Instance.new("SpecialMesh")
     hamonMesh.MeshType = Enum.MeshType.Cylinder
-    hamonMesh.Scale = Vector3.new(1, 6.8, 0.1)
+    hamonMesh.Scale = Vector3.new(1, 8, 0.1)
     hamonMesh.Parent = hamonPattern
     
-    -- 鍔（ドラゴンモチーフ）
+    -- 鍔（ドラゴンモチーフ、黒装飾）
     local guard = Instance.new("Part")
     guard.Name = "Guard"
-    guard.Size = Vector3.new(1, 0.15, 1)
-    guard.Transparency = 0.2
-    guard.CanCollide = false
+    guard.Size = Vector3.new(1.2, 0.1, 1.2)
     guard.Material = Enum.Material.Neon
-    guard.Color = Color3.fromRGB(15, 20, 40)
-    guard.Reflectance = 0.4
+    guard.Color = Color3.fromRGB(0, 0, 0)
+    guard.Reflectance = 0.5
+    guard.Transparency = 0.1
+    guard.CanCollide = false
+    guard.Parent = tool
     
     local guardMesh = Instance.new("SpecialMesh")
     guardMesh.MeshType = Enum.MeshType.FileMesh
-    guardMesh.MeshId = "rbxassetid://1071366" -- ドラゴン風装飾
-    guardMesh.Scale = Vector3.new(0.25, 0.03, 0.25)
+    guardMesh.MeshId = "rbxassetid://1071366"
+    guardMesh.Scale = Vector3.new(0.2, 0.02, 0.2)
     guardMesh.Parent = guard
     
-    -- 柄（黒革巻き + 龍彫刻）
+    -- 柄（黒革巻き）
     local grip = Instance.new("Part")
     grip.Name = "Grip"
     grip.Size = Vector3.new(0.4, 1, 0.4)
-    grip.Transparency = 0.3
-    grip.CanCollide = false
     grip.Material = Enum.Material.Neon
-    grip.Color = Color3.fromRGB(20, 20, 30)
+    grip.Color = Color3.fromRGB(10, 10, 15)
+    grip.Transparency = 0.2
+    grip.CanCollide = false
+    grip.Parent = tool
     
     local gripMesh = Instance.new("SpecialMesh")
     gripMesh.MeshType = Enum.MeshType.Cylinder
     gripMesh.Scale = Vector3.new(1, 2, 1)
     gripMesh.Parent = grip
     
-    -- 柄の装飾（龍彫刻）
+    -- 柄の装飾（龍彫刻、黒）
     local gripDeco = Instance.new("Part")
     gripDeco.Name = "GripDecoration"
     gripDeco.Size = Vector3.new(0.42, 0.95, 0.42)
-    gripDeco.Transparency = 0.8
-    gripDeco.CanCollide = false
     gripDeco.Material = Enum.Material.Neon
-    gripDeco.Color = Color3.fromRGB(30, 50, 80)
+    gripDeco.Color = Color3.fromRGB(15, 20, 30)
+    gripDeco.Transparency = 0.7
+    gripDeco.CanCollide = false
+    gripDeco.Parent = tool
     
     local decoMesh = Instance.new("SpecialMesh")
     decoMesh.MeshType = Enum.MeshType.FileMesh
     decoMesh.MeshId = "rbxassetid://1071115"
-    decoMesh.Scale = Vector3.new(0.15, 0.3, 0.15)
+    decoMesh.Scale = Vector3.new(0.12, 0.25, 0.12)
     decoMesh.Parent = gripDeco
     
-    -- ポメル（丸型）
+    -- ポメル（丸型、黒）
     local pommel = Instance.new("Part")
     pommel.Name = "Pommel"
     pommel.Shape = Enum.PartType.Ball
-    pommel.Size = Vector3.new(0.4, 0.4, 0.4)
-    pommel.Transparency = 0.1
-    pommel.CanCollide = false
+    pommel.Size = Vector3.new(0.5, 0.5, 0.5)
     pommel.Material = Enum.Material.Neon
-    pommel.Color = Color3.fromRGB(10, 15, 30)
-    pommel.Reflectance = 0.3
-    
-    -- パーツをツールの子にする
-    bladeDeco.Parent = tool
-    hamonPattern.Parent = tool
-    guard.Parent = tool
-    grip.Parent = tool
-    gripDeco.Parent = tool
+    pommel.Color = Color3.fromRGB(5, 5, 10)
+    pommel.Reflectance = 0.4
+    pommel.CanCollide = false
     pommel.Parent = tool
     
-    -- パーツをウェルドで接続
+    -- パーツ接続
     local function weldParts(part0, part1, cframe)
         local weld = Instance.new("Weld")
         weld.Part0 = part0
@@ -191,66 +194,61 @@ local function CreateKagebaBlade()
     end
     
     -- 接続設定
-    weldParts(handle, bladeDeco, CFrame.new(0, 1.5, 0) * CFrame.Angles(0, 0, 0))
-    weldParts(handle, hamonPattern, CFrame.new(0, 1.5, 0.03) * CFrame.Angles(0, 0, 0))
-    weldParts(handle, guard, CFrame.new(0, 0.2, 0) * CFrame.Angles(0, 0, 0))
-    weldParts(handle, grip, CFrame.new(0, -0.4, 0) * CFrame.Angles(0, 0, math.pi/2))
-    weldParts(handle, gripDeco, CFrame.new(0, -0.4, 0) * CFrame.Angles(0, 0, 0))
-    weldParts(handle, pommel, CFrame.new(0, -0.9, 0) * CFrame.Angles(0, 0, 0))
+    weldParts(handle, mainBlade, CFrame.new(0, 1.8, 0))
+    weldParts(handle, bladeTip, CFrame.new(0, 3.9, 0))
+    weldParts(handle, hamonPattern, CFrame.new(0, 1.8, 0.03))
+    weldParts(handle, guard, CFrame.new(0, 0.3, 0))
+    weldParts(handle, grip, CFrame.new(0, -0.6, 0) * CFrame.Angles(0, 0, math.pi/2))
+    weldParts(handle, gripDeco, CFrame.new(0, -0.6, 0))
+    weldParts(handle, pommel, CFrame.new(0, -1.1, 0))
     
-    -- ==== 特殊効果 ====
+    -- ==== 特殊効果（黒いオーラ）====
     
-    -- 闇の気配（黒いオーラ）
+    -- 闇のオーラ（完全な黒）
     local darkAura = Instance.new("ParticleEmitter")
     darkAura.Name = "DarkAura"
     darkAura.Texture = "rbxassetid://243662263"
     darkAura.Color = ColorSequence.new({
         ColorSequenceKeypoint.new(0, Color3.fromRGB(0, 0, 0)),
-        ColorSequenceKeypoint.new(1, Color3.fromRGB(15, 15, 35))
+        ColorSequenceKeypoint.new(1, Color3.fromRGB(5, 5, 10))
     })
     darkAura.Size = NumberSequence.new({
         NumberSequenceKeypoint.new(0, 0.1),
-        NumberSequenceKeypoint.new(1, 0.8)
+        NumberSequenceKeypoint.new(1, 1.2)
     })
     darkAura.Transparency = NumberSequence.new({
-        NumberSequenceKeypoint.new(0, 0.6),
-        NumberSequenceKeypoint.new(0.5, 0.4),
+        NumberSequenceKeypoint.new(0, 0.5),
+        NumberSequenceKeypoint.new(0.5, 0.3),
         NumberSequenceKeypoint.new(1, 1)
     })
-    darkAura.Lifetime = NumberRange.new(0.5, 1.2)
-    darkAura.Rate = 15
-    darkAura.Speed = NumberRange.new(0.2, 0.6)
-    darkAura.Parent = bladeDeco
+    darkAura.Lifetime = NumberRange.new(0.7, 1.5)
+    darkAura.Rate = 18
+    darkAura.Speed = NumberRange.new(0.2, 0.5)
+    darkAura.Rotation = NumberRange.new(0, 360)
+    darkAura.VelocityInheritance = 0.1
+    darkAura.Parent = mainBlade
     
-    -- 冷気エフェクト（青い粒子）
-    local coldAura = Instance.new("ParticleEmitter")
-    coldAura.Name = "ColdAura"
-    coldAura.Texture = "rbxassetid://243483364"
-    coldAura.Color = ColorSequence.new(Color3.fromRGB(80, 120, 200))
-    coldAura.Size = NumberSequence.new(0.05, 0.2)
-    coldAura.Transparency = NumberSequence.new(0.3, 0.8)
-    coldAura.Lifetime = NumberRange.new(0.3, 0.8)
-    coldAura.Rate = 12
-    coldAura.Speed = NumberRange.new(0.1, 0.4)
-    coldAura.LightEmission = 0.3
-    coldAura.Parent = bladeDeco
+    -- 冷気（黒い霧）
+    local coldMist = Instance.new("ParticleEmitter")
+    coldMist.Name = "ColdMist"
+    coldMist.Texture = "rbxassetid://243483364"
+    coldMist.Color = ColorSequence.new(Color3.fromRGB(10, 15, 30))
+    coldMist.Size = NumberSequence.new(0.05, 0.3)
+    coldMist.Transparency = NumberSequence.new(0.4, 0.9)
+    coldMist.Lifetime = NumberRange.new(0.4, 1.0)
+    coldMist.Rate = 12
+    coldMist.Speed = NumberRange.new(0.1, 0.4)
+    coldMist.LightEmission = 0.1
+    coldMist.Parent = mainBlade
     
-    -- 青みがかった発光
-    local bladeGlow = Instance.new("PointLight")
-    bladeGlow.Name = "BladeGlow"
-    bladeGlow.Color = Color3.fromRGB(40, 80, 180)
-    bladeGlow.Range = 7
-    bladeGlow.Brightness = 1.0
-    bladeGlow.Shadows = true
-    bladeGlow.Parent = bladeDeco
-    
-    -- 波紋の発光（SF的要素）
-    local hamonGlow = Instance.new("PointLight")
-    hamonGlow.Name = "HamonGlow"
-    hamonGlow.Color = Color3.fromRGB(0, 100, 255)
-    hamonGlow.Range = 5
-    hamonGlow.Brightness = 0.8
-    hamonGlow.Parent = hamonPattern
+    -- 微かな黒い発光
+    local darkGlow = Instance.new("PointLight")
+    darkGlow.Name = "DarkGlow"
+    darkGlow.Color = Color3.fromRGB(5, 10, 20)
+    darkGlow.Range = 6
+    darkGlow.Brightness = 0.8
+    darkGlow.Shadows = true
+    darkGlow.Parent = mainBlade
     
     -- ==== サウンドエフェクト ====
     local equipSound = Instance.new("Sound")
@@ -271,75 +269,180 @@ local function CreateKagebaBlade()
     slashSound.Volume = 0.7
     slashSound.Parent = handle
     
-    local humSound = Instance.new("Sound")
-    humSound.Name = "HumSound"
-    humSound.SoundId = "rbxassetid://9125144088"
-    humSound.Looped = true
-    humSound.Volume = 0.2
-    humSound.Parent = handle
+    local darkHumSound = Instance.new("Sound")
+    darkHumSound.Name = "DarkHumSound"
+    darkHumSound.SoundId = "rbxassetid://9125144088"
+    darkHumSound.Looped = true
+    darkHumSound.Volume = 0.15
+    darkHumSound.Parent = handle
+    
+    -- ==== 降臨エフェクト用のオブジェクト ====
+    local descentEffect = Instance.new("Part")
+    descentEffect.Name = "DescentEffect"
+    descentEffect.Size = Vector3.new(5, 0.1, 5)
+    descentEffect.Transparency = 1
+    descentEffect.Anchored = true
+    descentEffect.CanCollide = false
+    descentEffect.Parent = workspace
+    
+    local descentAura = Instance.new("ParticleEmitter")
+    descentAura.Texture = "rbxassetid://243662263"
+    descentAura.Color = ColorSequence.new(Color3.fromRGB(0, 0, 0))
+    descentAura.Size = NumberSequence.new(2, 5)
+    descentAura.Transparency = NumberSequence.new(0.3, 1)
+    descentAura.Lifetime = NumberRange.new(1, 2)
+    descentAura.Rate = 50
+    descentAura.Speed = NumberRange.new(0, 1)
+    descentAura.SpreadAngle = Vector2.new(0, 360)
+    descentAura.Parent = descentEffect
+    
+    local darkRays = Instance.new("Part")
+    darkRays.Name = "DarkRays"
+    darkRays.Size = Vector3.new(10, 10, 10)
+    darkRays.Transparency = 1
+    darkRays.Anchored = true
+    darkRays.CanCollide = false
+    darkRays.Parent = workspace
+    
+    local rayEmitter = Instance.new("ParticleEmitter")
+    rayEmitter.Texture = "rbxassetid://243483372"
+    rayEmitter.Color = ColorSequence.new(Color3.fromRGB(0, 0, 0))
+    rayEmitter.Size = NumberSequence.new(0.5, 2)
+    rayEmitter.Transparency = NumberSequence.new(0.2, 1)
+    rayEmitter.Lifetime = NumberRange.new(0.5, 1)
+    rayEmitter.Rate = 30
+    rayEmitter.Speed = NumberRange.new(5, 15)
+    rayEmitter.VelocitySpread = 180
+    rayEmitter.Parent = darkRays
+    
+    -- ==== 縦振りアニメーション ====
+    local verticalSwingAnim = Instance.new("Animation")
+    verticalSwingAnim.Name = "VerticalSwing"
+    verticalSwingAnim.AnimationId = "rbxassetid://5918726674"
+    
+    local descentAnim = Instance.new("Animation")
+    descentAnim.Name = "DescentAnimation"
+    descentAnim.AnimationId = "rbxassetid://10785333347" -- 降臨アニメーション
     
     -- ==== ツール機能 ====
     
-    -- 装備時
+    -- 降臨エフェクト関数
+    local function playDescentEffect()
+        if character:FindFirstChild("HumanoidRootPart") then
+            local hrp = character.HumanoidRootPart
+            local position = hrp.Position + Vector3.new(0, 20, 0)
+            
+            -- エフェクト位置設定
+            descentEffect.Position = position + Vector3.new(0, -10, 0)
+            darkRays.Position = position
+            
+            -- エフェクト有効化
+            descentAura.Enabled = true
+            rayEmitter.Enabled = true
+            
+            -- 階段状に降りてくるアニメーション
+            local animTrack = humanoid:LoadAnimation(descentAnim)
+            animTrack:Play()
+            
+            -- エフェクトのフェードアウト
+            task.wait(2)
+            descentAura.Enabled = false
+            rayEmitter.Enabled = false
+            
+            -- エフェクトオブジェクト削除
+            task.wait(1)
+            descentEffect:Destroy()
+            darkRays:Destroy()
+        end
+    end
+    
+    -- 装備時（降臨エフェクト発動）
     tool.Equipped:Connect(function()
         equipSound:Play()
         unsheatheSound:Play()
-        humSound:Play()
+        darkHumSound:Play()
+        
+        -- 降臨エフェクト再生
+        playDescentEffect()
         
         -- エフェクト強化
         darkAura.Rate = 25
-        coldAura.Rate = 18
-        bladeGlow.Brightness = 1.5
-        hamonGlow.Brightness = 1.2
+        coldMist.Rate = 20
+        darkGlow.Brightness = 1.2
+        
+        -- アクティベートイベント
+        tool.Activated:Connect(function()
+            if db == true then
+                db = false
+                slashSound:Play()
+                
+                -- 縦振りアニメーション再生
+                local animTrack = humanoid:LoadAnimation(verticalSwingAnim)
+                animTrack:Play(0.1, 1, 1)
+                
+                -- 斬撃エフェクト（黒い閃光）
+                darkGlow.Brightness = 2.5
+                darkGlow.Color = Color3.fromRGB(10, 20, 40)
+                
+                local slashEffect = Instance.new("ParticleEmitter")
+                slashEffect.Texture = "rbxassetid://241809795"
+                slashEffect.Color = ColorSequence.new(Color3.fromRGB(0, 0, 10))
+                slashEffect.Size = NumberSequence.new(0.1, 0.4)
+                slashEffect.Transparency = NumberSequence.new(0, 1)
+                slashEffect.Lifetime = NumberRange.new(0.1, 0.3)
+                slashEffect.Rate = 60
+                slashEffect.Speed = NumberRange.new(8, 15)
+                slashEffect.Parent = mainBlade
+                
+                da = true
+                db = true
+                
+                -- エフェクト解除
+                task.wait(0.2)
+                slashEffect:Destroy()
+                darkGlow.Brightness = 1.2
+                darkGlow.Color = Color3.fromRGB(5, 10, 20)
+                
+                task.wait(1.8)
+                da = false
+                animTrack:Stop()
+            end
+        end)
     end)
     
     -- 非装備時
     tool.Unequipped:Connect(function()
-        humSound:Stop()
+        darkHumSound:Stop()
         
         -- エフェクト弱化
-        darkAura.Rate = 15
-        coldAura.Rate = 12
-        bladeGlow.Brightness = 1.0
-        hamonGlow.Brightness = 0.8
+        darkAura.Rate = 18
+        coldMist.Rate = 12
+        darkGlow.Brightness = 0.8
     end)
     
-    -- 使用時（斬撃）
-    tool.Activated:Connect(function()
-        slashSound:Play()
-        
-        -- 斬撃時の閃光
-        bladeGlow.Brightness = 3.0
-        bladeGlow.Color = Color3.fromRGB(100, 150, 255)
-        hamonGlow.Brightness = 2.0
-        
-        -- 斬撃エフェクト
-        local slashEffect = Instance.new("ParticleEmitter")
-        slashEffect.Texture = "rbxassetid://241809795"
-        slashEffect.Color = ColorSequence.new(Color3.fromRGB(50, 120, 255))
-        slashEffect.Size = NumberSequence.new(0.1, 0.3)
-        slashEffect.Transparency = NumberSequence.new(0, 1)
-        slashEffect.Lifetime = NumberRange.new(0.1, 0.3)
-        slashEffect.Rate = 50
-        slashEffect.Speed = NumberRange.new(5, 10)
-        slashEffect.Parent = bladeDeco
-        
-        -- アニメーション再生
-        if humanoid then
-            local animation = Instance.new("Animation")
-            animation.AnimationId = "rbxassetid://5918726674"
-            local animTrack = humanoid:LoadAnimation(animation)
-            animTrack:Play(0.1, 1, 1)
+    -- ヒット処理
+    handle.Touched:Connect(function(n)
+        if da == true then
+            local o = n.Parent:FindFirstChild("Humanoid")
+            if o ~= nil then
+                local p = Players:FindFirstChild(n.Parent.Name)
+                if p and p ~= player then
+                    -- ヒットエフェクト
+                    local hitEffect = Instance.new("ParticleEmitter")
+                    hitEffect.Texture = "rbxassetid://243662263"
+                    hitEffect.Color = ColorSequence.new(Color3.fromRGB(0, 0, 0))
+                    hitEffect.Size = NumberSequence.new(0.5, 1)
+                    hitEffect.Transparency = NumberSequence.new(0, 1)
+                    hitEffect.Lifetime = NumberRange.new(0.3, 0.6)
+                    hitEffect.Rate = 20
+                    hitEffect.Speed = NumberRange.new(2, 5)
+                    hitEffect.Parent = mainBlade
+                    
+                    task.wait(0.1)
+                    hitEffect:Destroy()
+                end
+            end
         end
-        
-        -- エフェクト解除
-        wait(0.15)
-        slashEffect:Destroy()
-        
-        -- 光を元に戻す
-        bladeGlow.Brightness = 1.5
-        bladeGlow.Color = Color3.fromRGB(40, 80, 180)
-        hamonGlow.Brightness = 1.2
     end)
     
     -- ツールをバックパックに追加
@@ -347,8 +450,8 @@ local function CreateKagebaBlade()
     
     -- 通知
     Rayfield:Notify({
-        Title = "影刃 召喚完了",
-        Content = "闇の刃があなたのバックパックに追加されました",
+        Title = "影刃 降臨完了",
+        Content = "闇より影刃が降り立ちました",
         Duration = 5,
         Image = 4483362458,
         Actions = {
@@ -363,39 +466,84 @@ local function CreateKagebaBlade()
     return tool
 end
 
+-- 追加機能タブ
+local EffectsTab = Window:CreateTab("特殊効果", 4483362458)
+local EffectsSection = EffectsTab:CreateSection("降臨エフェクト設定")
+
+-- オーラ強度調整
+local AuraIntensitySlider = EffectsTab:CreateSlider({
+    Name = "闇オーラ強度",
+    Range = {0, 100},
+    Increment = 1,
+    Suffix = "%",
+    CurrentValue = 50,
+    Flag = "DarkAuraIntensity",
+    Callback = function(value)
+        _G.DarkAuraIntensity = value / 100
+    end,
+})
+
+-- 降臨エフェクトオン/オフ
+local DescentEffectToggle = EffectsTab:CreateToggle({
+    Name = "降臨エフェクト",
+    CurrentValue = true,
+    Flag = "DescentEffectEnabled",
+    Callback = function(value)
+        _G.DescentEffectEnabled = value
+    end,
+})
+
+-- 縦振りアニメーション強度
+local SwingIntensitySlider = EffectsTab:CreateSlider({
+    Name = "斬撃強度",
+    Range = {50, 200},
+    Increment = 10,
+    Suffix = "%",
+    CurrentValue = 100,
+    Flag = "SwingIntensity",
+    Callback = function(value)
+        _G.SwingIntensity = value / 100
+    end,
+})
+
+-- デフォルト設定
+_G.DarkAuraIntensity = 0.5
+_G.DescentEffectEnabled = true
+_G.SwingIntensity = 1.0
+
 -- ==== UI 要素 ====
 
 -- 生成ボタン
 local GenerateButton = MainTab:CreateButton({
-    Name = "影刃を召喚する",
+    Name = "影刃を降臨させる",
     Callback = function()
         CreateKagebaBlade()
     end,
 })
 
 -- 武器情報セクション
-local InfoSection = MainTab:CreateSection("武器詳細")
+local InfoSection = MainTab:CreateSection("影刃 - 闇の降臨")
 
-MainTab:CreateLabel("【影刃 - Kageba】")
-MainTab:CreateLabel("基本色: 鏡面ブラック + 青み")
-MainTab:CreateLabel("刃文: 波紋模様 (青い発光)")
-MainTab:CreateLabel("鍔: ドラゴンモチーフ装飾")
+MainTab:CreateLabel("【完全な闇の剣】")
+MainTab:CreateLabel("基本色: 真っ黒 + 微かな青み")
+MainTab:CreateLabel("質感: 鏡面ブラック")
+MainTab:CreateLabel("刃文: 黒い波紋模様")
+MainTab:CreateLabel("鍔: ドラゴン・獣モチーフ（黒）")
 MainTab:CreateLabel("柄: 黒革巻き + 龍彫刻")
-MainTab:CreateLabel("特殊効果: 闇のオーラ + 冷気")
 
 MainTab:CreateParagraph({
-    Title = "説明",
-    Content = "ダークファンタジーと近未来SFが融合した世界観の剣。鏡面ブラックの刃は青みがかった反射を持ち、波紋模様が施されている。微かに闇の気配を漂わせ、圧倒的な存在感を放つ。"
+    Title = "新機能",
+    Content = "・完全な黒い剣デザイン\n・縦振り専用アニメーション\n・上からの降臨エフェクト\n・黒いオーラと背景エフェクト"
 })
 
 -- システム通知
 Rayfield:Notify({
-    Title = "システム起動完了",
-    Content = "影刃生成システムが準備できました",
+    Title = "闇の降臨システム 起動",
+    Content = "影刃召喚システムが準備完了しました\n完全な闇の剣が降臨します",
     Duration = 5,
     Image = 4483362458,
 })
 
-print("影刃生成システム - 起動完了")
-print("バージョン: 2.1")
-print("仕様: ダークファンタジー × 近未来SF")
+print("影刃生成システム - 闇の降臨バージョン")
+print("バージョン: 3.0")
+print("特徴: 完全な黒 + 縦振りアニメーション + 降臨エフェクト")
